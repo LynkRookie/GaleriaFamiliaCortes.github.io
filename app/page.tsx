@@ -6,6 +6,7 @@ import AlbumCard from "@/components/album-card"
 import Image from "next/image"
 import Link from "next/link"
 import { ImageIcon, ArrowRight, ChevronDown, Layers, Star } from "lucide-react"
+import imgtmo from '../public/icon-dark-32x32.png'
 
 type Tab = "coleccion" | "destacados"
 
@@ -35,11 +36,9 @@ export default function HomePage() {
 
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md border border-primary/30 bg-primary/10">
-              <ImageIcon className="h-3.5 w-3.5 text-primary" />
-            </div>
+            <Image src={imgtmo} alt="Logo"className="max-h-11 w-auto object-contain"/>
             <span className="font-serif text-sm font-semibold tracking-tight text-foreground">
-              Mi Galería
+              IgniStack Galery 
             </span>
           </div>
 
@@ -112,17 +111,18 @@ export default function HomePage() {
           {/* Hero content */}
           <div className="absolute inset-0 flex flex-col justify-end px-6 pb-14 sm:px-10 lg:px-16">
             {/* Label */}
+         
             <div className="mb-4 flex items-center gap-3">
               <div className="h-px w-8 bg-primary" />
               <span className="font-mono text-[9px] tracking-[0.4em] uppercase text-primary">
-                Álbum destacado
+                Álbum destacados
               </span>
               <div className="h-px flex-1 max-w-[60px] bg-primary/20" />
             </div>
 
             {/* Title */}
             <h1 className="font-serif font-bold leading-[0.9] text-white text-balance
-              text-[clamp(3rem,10vw,7.5rem)]">
+              text-[clamp(3rem,10vw,5rem)]">
               {featured.title}
             </h1>
 
