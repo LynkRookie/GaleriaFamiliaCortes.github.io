@@ -50,7 +50,7 @@ export default function HomePage() {
           </div>
 
           {/* Tabs — center */}
-          <nav className="flex items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.03] p-1" aria-label="Secciones" style={{marginLeft:"55rem"}}>
+          <nav className="flex items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.03] p-1" aria-label="Secciones" style={{marginLeft:"auto",marginRight:"-1rem"}}>
             <button
               onClick={() => setActiveTab("coleccion")}
               className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium tracking-wider uppercase transition-all duration-200 ${
