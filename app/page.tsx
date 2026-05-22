@@ -71,9 +71,7 @@ export default function HomePage() {
           {/* Stat */}
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground">
-              {albums.length} álbumes
-            </span>
+          
           </div>
         </div>
       </header>
