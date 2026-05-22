@@ -10,23 +10,23 @@ const _playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playf
 export const metadata: Metadata = {
   title: 'Mi Galería de Fotos',
   description: 'Galería personal de álbumes y fotos',
-  generator: '/icon-dark-32x32.png',
+  generator: '/IgniStack.ico',
   icons: {
     icon: [
       {
-        url: 'icon-dark-32x32.png',
+        url: '/IgniStack.ico',
         media: '(prefers-color-scheme: light)',
       },
       {
-        url: '/icon-dark-32x32.png',
+        url: '/IgniStack.ico',
         media: '(prefers-color-scheme: dark)',
       },
       {
-        url: '/icon-dark-32x32.png',
+        url: '/IgniStack.ico',
         type: 'image/svg+xml',
       },
     ],
-    apple: '/icon-dark-32x32.png',
+    apple: '/IgniStack.ico',
   },
 }
 
