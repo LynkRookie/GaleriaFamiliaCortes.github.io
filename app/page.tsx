@@ -36,7 +36,14 @@ export default function HomePage() {
 
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <Image src={imgtmo} alt="Logo"className="max-h-11 w-auto object-contain"/>
+            <Image src={imgtmo} 
+            alt="Logo"
+            className="max-h-11 w-auto object-contain" 
+            style={{
+                color: "transparent",
+                marginLeft: "-2rem",
+                marginRight: "-2rem",
+              }}/>
             <span className="font-serif text-sm font-semibold tracking-tight text-foreground">
               IgniStack Galery 
             </span>
