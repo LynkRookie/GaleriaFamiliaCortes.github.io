@@ -8,7 +8,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono
 const _playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
 
 export const metadata: Metadata = {
-  title: 'Mi Galería de Fotos',
+  title: 'IgniStack Gallery ',
   description: 'Galería personal de álbumes y fotos',
   generator: '/IgniStack.ico',
   icons: {
