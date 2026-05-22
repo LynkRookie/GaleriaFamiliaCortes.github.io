@@ -45,7 +45,7 @@ export default function HomePage() {
                 marginRight: "-2rem",
               }}/>
             <span className="font-serif text-sm font-semibold tracking-tight text-foreground">
-              IgniStack Galery 
+              IgniStack Gallery 
             </span>
           </div>
 
