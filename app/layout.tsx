@@ -10,11 +10,11 @@ const _playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playf
 export const metadata: Metadata = {
   title: 'Mi Galería de Fotos',
   description: 'Galería personal de álbumes y fotos',
-  generator: 'v0.app',
+  generator: '/icon-dark-32x32.png',
   icons: {
     icon: [
       {
-        url: '/icon-dark-32x32.png',
+        url: 'icon-dark-32x32.png',
         media: '(prefers-color-scheme: light)',
       },
       {
