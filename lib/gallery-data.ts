@@ -187,10 +187,227 @@ export const albums: Album[] = [
         alt: "",
         caption: "FOTO 28",
       }
+,
+        {
+        src: "/albums/vacaciones/foto30.jpeg",
+        alt: "",
+        caption: "FOTO 29",
+      }
 
+      ,
+        {
+        src: "/albums/vacaciones/foto31.jpeg",
+        alt: "",
+        caption: "FOTO 30",
+      }
+,
+        {
+        src: "/albums/vacaciones/foto32.jpeg",
+        alt: "",
+        caption: "FOTO 31",
+      }
 
+      ,
+        {
+        src: "/albums/vacaciones/foto33.jpeg",
+        alt: "",
+        caption: "FOTO 32",
+      }
+,
+        {
+        src: "/albums/vacaciones/foto34.jpeg",
+        alt: "",
+        caption: "FOTO 33",
+      }
 
+      ,
+        {
+        src: "/albums/vacaciones/foto35.jpeg",
+        alt: "",
+        caption: "FOTO 34",
+      }
+,
+        {
+        src: "/albums/vacaciones/foto36.jpeg",
+        alt: "",
+        caption: "FOTO 35",
+      }
 
+      ,
+        {
+        src: "/albums/vacaciones/foto37.jpeg",
+        alt: "",
+        caption: "FOTO 36",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto38.jpeg",
+        alt: "",
+        caption: "FOTO 37",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto39.jpeg",
+        alt: "",
+        caption: "FOTO 38",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto40.jpeg",
+        alt: "",
+        caption: "FOTO 39",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto41.jpeg",
+        alt: "",
+        caption: "FOTO 40",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto42.jpeg",
+        alt: "",
+        caption: "FOTO 41",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto43.jpeg",
+        alt: "",
+        caption: "FOTO 42",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto44.jpeg",
+        alt: "",
+        caption: "FOTO 43",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto45.jpeg",
+        alt: "",
+        caption: "FOTO 44",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto46.jpeg",
+        alt: "",
+        caption: "FOTO 45",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto47.jpeg",
+        alt: "",
+        caption: "FOTO 46",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto48.jpeg",
+        alt: "",
+        caption: "FOTO 47",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto49.jpeg",
+        alt: "",
+        caption: "FOTO 48",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto50.jpeg",
+        alt: "",
+        caption: "FOTO 49",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto51.jpeg",
+        alt: "",
+        caption: "FOTO 50",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto52.jpeg",
+        alt: "",
+        caption: "FOTO 51",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto53.jpeg",
+        alt: "",
+        caption: "FOTO 52",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto54.jpeg",
+        alt: "",
+        caption: "FOTO 53",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto55.jpeg",
+        alt: "",
+        caption: "FOTO 54",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto56.jpeg",
+        alt: "",
+        caption: "FOTO 55",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto57.jpeg",
+        alt: "",
+        caption: "FOTO 56",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto58.jpeg",
+        alt: "",
+        caption: "FOTO 57",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto59.jpeg",
+        alt: "",
+        caption: "FOTO 58",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto60.jpeg",
+        alt: "",
+        caption: "FOTO 59",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto61.jpeg",
+        alt: "",
+        caption: "FOTO 60",
+      }
+      ,
+        {
+        src: "/albums/vacaciones/foto62.jpeg",
+        alt: "",
+        caption: "FOTO 61",
+      }
+
+      ,
+        {
+        src: "/albums/vacaciones/foto63.jpeg",
+        alt: "",
+        caption: "FOTO 62",
+      }
     ],
   }
 ]
