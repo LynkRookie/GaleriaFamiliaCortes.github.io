@@ -179,7 +179,6 @@ export const albums: Album[] = [
         "/albums/vacaciones/foto109.jpeg",
         "/albums/vacaciones/foto110.jpeg",
         "/albums/vacaciones/foto111.jpeg",
-        "/albums/vacaciones/foto112.jpeg",
         "/albums/vacaciones/foto113.jpeg",
         "/albums/vacaciones/foto114.jpeg",
         "/albums/vacaciones/foto115.jpeg",
