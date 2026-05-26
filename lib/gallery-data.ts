@@ -203,7 +203,7 @@ export const albums: Album[] = [
         // Para agregar una descripción a otra foto, copia el formato de abajo.
         //
         0: "El comienzo de un viaje lleno de momentos inolvidables junto a la familia",
-      122: " Te amo hasta el infinito y más allá me haces mucha falta Papá gracias por tanto y por todo",
+      121: " Te amo hasta el infinito y más allá me haces mucha falta Papá gracias por tanto y por todo",
 
 
        
