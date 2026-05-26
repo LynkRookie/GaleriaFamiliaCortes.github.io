@@ -149,6 +149,7 @@ export default function AlbumViewer({ album }: AlbumViewerProps) {
           onPrev={handlePrev}
           onNext={handleNext}
           onJumpTo={handleJumpTo}
+          music={album.music}
         />
       )}
 

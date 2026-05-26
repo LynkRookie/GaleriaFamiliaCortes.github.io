@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useState, useRef } from "react"
 import Image from "next/image"
-import { X, ChevronLeft, ChevronRight, Download, Play, Pause } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Download, Play, Pause, Maximize, Minimize } from "lucide-react"
 import type { Photo } from "@/lib/gallery-data"
 
 interface ImageViewerProps {
@@ -12,6 +12,7 @@ interface ImageViewerProps {
   onPrev: () => void
   onNext: () => void
   onJumpTo?: (index: number) => void
+  music?: string[]
 }
 
 // Total time each slide is shown (ms)
@@ -26,6 +27,7 @@ export default function ImageViewer({
   onPrev,
   onNext,
   onJumpTo,
+  music,
 }: ImageViewerProps) {
   const total = photos.length
 
@@ -128,6 +130,80 @@ export default function ImageViewer({
   }, [isSlideshow, stopSlideshow, currentIndex, total, onJumpTo])
 
   // ─────────────────────────────────────────────
+  // Fullscreen
+  // ─────────────────────────────────────────────
+  const [isFullscreen, setIsFullscreen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen().catch(() => {})
+    } else {
+      document.exitFullscreen().catch(() => {})
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleChange = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener("fullscreenchange", handleChange)
+    return () => document.removeEventListener("fullscreenchange", handleChange)
+  }, [])
+
+  // ─────────────────────────────────────────────
+  // Music — playlist with 10s gap between tracks, circular loop
+  // ─────────────────────────────────────────────
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const musicGapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const trackIndexRef = useRef(0)
+
+  const playTrack = useCallback((index: number) => {
+    if (!music || music.length === 0) return
+    const audio = audioRef.current
+    if (!audio) return
+    trackIndexRef.current = index
+    audio.src = music[index]
+    audio.currentTime = 0
+    audio.play().catch(() => {})
+  }, [music])
+
+  // Create the audio element once
+  useEffect(() => {
+    if (!music || music.length === 0) return
+    const audio = new Audio(music[0])
+    audio.volume = 0.7
+    audio.loop = false
+    audioRef.current = audio
+
+    // When a track ends, wait 10s then play the next one (circular)
+    const handleEnded = () => {
+      musicGapTimerRef.current = setTimeout(() => {
+        const next = (trackIndexRef.current + 1) % music.length
+        playTrack(next)
+      }, 10_000)
+    }
+    audio.addEventListener("ended", handleEnded)
+
+    return () => {
+      audio.removeEventListener("ended", handleEnded)
+      audio.pause()
+      if (musicGapTimerRef.current) clearTimeout(musicGapTimerRef.current)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [music])
+
+  // Play / pause with the slideshow
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    if (isSlideshow) {
+      playTrack(0)
+    } else {
+      audio.pause()
+      if (musicGapTimerRef.current) clearTimeout(musicGapTimerRef.current)
+    }
+  }, [isSlideshow, playTrack])
+
+  // ─────────────────────────────────────────────
   // Download
   // ─────────────────────────────────────────────
   const handleDownload = useCallback(async () => {
@@ -157,8 +233,9 @@ export default function ImageViewer({
       if (e.key === "ArrowLeft")  { stopSlideshow(); onPrev() }
       if (e.key === "ArrowRight") { stopSlideshow(); onNext() }
       if (e.key === " ")          { e.preventDefault(); toggleSlideshow() }
+      if (e.key === "f" || e.key === "F") { toggleFullscreen() }
     },
-    [onClose, onPrev, onNext, toggleSlideshow, stopSlideshow],
+    [onClose, onPrev, onNext, toggleSlideshow, stopSlideshow, toggleFullscreen],
   )
 
   useEffect(() => {
@@ -179,11 +256,13 @@ export default function ImageViewer({
     active?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" })
   }, [currentIndex])
 
-  // Cleanup
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (slideshowRef.current) clearTimeout(slideshowRef.current)
-      if (fadeTimerRef.current)  clearTimeout(fadeTimerRef.current)
+      if (slideshowRef.current)   clearTimeout(slideshowRef.current)
+      if (fadeTimerRef.current)   clearTimeout(fadeTimerRef.current)
+      if (musicGapTimerRef.current) clearTimeout(musicGapTimerRef.current)
+      audioRef.current?.pause()
     }
   }, [])
 
@@ -192,6 +271,7 @@ export default function ImageViewer({
 
   return (
     <div
+      ref={containerRef}
       className="fixed inset-0 z-50 flex flex-col bg-black"
       role="dialog"
       aria-modal="true"
@@ -227,6 +307,16 @@ export default function ImageViewer({
             }`}
           >
             {isSlideshow ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+          </button>
+
+          {/* Fullscreen */}
+          <button
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+            title={isFullscreen ? "Salir de pantalla completa (F)" : "Pantalla completa (F)"}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+          >
+            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
           </button>
 
           {/* Download */}
