@@ -191,7 +191,10 @@ export const albums: Album[] = [
         "/albums/vacaciones/foto123.jpeg",
         "/albums/vacaciones/foto124.jpeg",
         "/albums/vacaciones/foto125.jpeg",
-        
+        "/albums/vacaciones/foto126.jpeg",
+        "/albums/vacaciones/foto127.jpeg",
+        "/albums/vacaciones/foto128.jpeg",
+
       ],
       {
         // ── Captions personalizados ───────────────────────────
@@ -200,6 +203,10 @@ export const albums: Album[] = [
         // Para agregar una descripción a otra foto, copia el formato de abajo.
         //
         0: "El comienzo de un viaje lleno de momentos inolvidables junto a la familia",
+      124: " Te amo hasta el infinito y más allá me haces mucha falta Papá gracias por tanto y por todo",
+
+
+       
         // 1: "Aquí va tu descripción para la segunda foto",
         // 5: "Toda la familia reunida, un día para recordar siempre",
       }
