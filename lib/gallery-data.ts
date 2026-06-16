@@ -273,7 +273,7 @@ export const albums: Album[] = [
         // Para agregar una descripción a otra foto, copia el formato de abajo.
         //
       0: "El comienzo de un viaje lleno de momentos inolvidables junto a la familia",
-      58:"Que tema más entretenido con mis hijos  nuestras viejas nos perdonarán que las engañamos",
+      57:"Que tema más entretenido con mis hijos  nuestras viejas nos perdonarán que las engañamos",
       118:"Papá Cuánta falta me haces Hoy vives en el cielo pero también en mi corazón te extraño mucho papá 💗Gracias por tus lindos consejos que me diste Gracias por el amor que me entregaste Gracias por ser mi amigo.Gracias por el tiempo que me dedicaste no te imaginas cuánto te extraño,de escuchar tu voz ver tu mirada sentir tu sonrisa no sabes cuánto te extraño de tenerte a mi lado , la única manera de verte es viendo tus fotos pero mis ojos se llenan de lágrimas pero se que tú quieres que siga adelante mi bello angel se que me das la fuerza para seguir adelante .Te quiero mucho te recordaré por siempre se que algún día nos volveremos a ver y estaremos juntos otra vez  te amo te quiero más allá de las estrellas  PAPÁ ♥️",
       155: " Te amo hasta el infinito y más allá me haces mucha falta Papá gracias por tanto y por todo",
         // 1: "Aquí va tu descripción para la segunda foto",
