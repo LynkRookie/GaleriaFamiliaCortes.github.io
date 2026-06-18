@@ -17,7 +17,8 @@ interface ImageViewerProps {
 }
 
 // Total time each slide is shown (ms)
-const SLIDESHOW_DURATION = 20_000
+// ← AQUI cambias la duración de cada foto en el slideshow
+const SLIDESHOW_DURATION = 15_000
 // Duration of the cross-fade overlap (ms) — must be < SLIDESHOW_DURATION
 const FADE_DURATION = 1_800
 // Time the dedicatoria screen stays visible (ms)
@@ -271,6 +272,99 @@ export default function ImageViewer({
   }, [isSlideshow])
 
   // ─────────────────────────────────────────────
+  // Text-to-Speech (TTS)
+  // When slideshow reaches a photo with a caption:
+  //   1. Music fades down to 15% over 1.2s
+  //   2. Web Speech API reads the caption in natural Spanish
+  //   3. Music fades back up to 70% when speech ends
+  // ─────────────────────────────────────────────
+  const ttsRef = useRef<SpeechSynthesisUtterance | null>(null)
+
+  const fadeVolume = useCallback(
+    (from: number, to: number, durationMs: number) => {
+      const audio = audioRef.current
+      if (!audio) return
+      const steps = 30
+      const stepTime = durationMs / steps
+      const diff = (to - from) / steps
+      let current = from
+      let count = 0
+      const interval = setInterval(() => {
+        count++
+        current += diff
+        audio.volume = Math.max(0, Math.min(1, current))
+        if (count >= steps) clearInterval(interval)
+      }, stepTime)
+    },
+    []
+  )
+
+  const speakCaption = useCallback(
+    (text: string) => {
+      if (!("speechSynthesis" in window)) return
+      window.speechSynthesis.cancel()
+
+      const utter = new SpeechSynthesisUtterance(text)
+      utter.lang = "es-ES"
+      utter.rate = 0.88   // un poco más lento para que se entienda bien
+      utter.pitch = 1.05
+      utter.volume = 1
+
+      // Pick a natural-sounding Spanish voice if available
+      const voices = window.speechSynthesis.getVoices()
+      const preferred = voices.find(
+        (v) =>
+          v.lang.startsWith("es") &&
+          (v.name.toLowerCase().includes("google") ||
+            v.name.toLowerCase().includes("mónica") ||
+            v.name.toLowerCase().includes("paulina") ||
+            v.name.toLowerCase().includes("jorge") ||
+            v.name.toLowerCase().includes("lucia") ||
+            v.name.toLowerCase().includes("diego"))
+      )
+      if (preferred) utter.voice = preferred
+
+      utter.onstart = () => {
+        fadeVolume(audioRef.current?.volume ?? 0.7, 0.12, 1200)
+      }
+      utter.onend = () => {
+        fadeVolume(audioRef.current?.volume ?? 0.12, 0.7, 1500)
+      }
+
+      ttsRef.current = utter
+      // Small delay so fade starts smoothly before speech begins
+      setTimeout(() => window.speechSynthesis.speak(utter), 300)
+    },
+    [fadeVolume]
+  )
+
+  // Trigger TTS whenever the slide changes during slideshow
+  useEffect(() => {
+    if (!isSlideshow) {
+      window.speechSynthesis?.cancel()
+      return
+    }
+    const slide = photos[currentIndex]
+    const text = isPhoto(slide)
+      ? (slide.caption ?? "")
+      : isDedicatoria(slide)
+      ? (slide as Extract<Photo, { type: "dedicatoria" }>).text
+      : ""
+
+    if (text.trim()) {
+      speakCaption(text)
+    } else {
+      window.speechSynthesis?.cancel()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex, isSlideshow])
+
+  // Stop TTS when slideshow stops or viewer closes
+  useEffect(() => {
+    if (!isSlideshow) window.speechSynthesis?.cancel()
+  }, [isSlideshow])
+
+  // ─────────────────────────────────────────────
   // Download (only for photo slides)
   // ─────────────────────────────────────────────
   const handleDownload = useCallback(async () => {
@@ -331,6 +425,7 @@ export default function ImageViewer({
       if (fadeTimerRef.current)       clearTimeout(fadeTimerRef.current)
       if (musicGapTimerRef.current)   clearTimeout(musicGapTimerRef.current)
       audioRef.current?.pause()
+      window.speechSynthesis?.cancel()
     }
   }, [])
 
@@ -417,7 +512,7 @@ export default function ImageViewer({
       {/* ── Main area ── */}
       <div className="relative flex flex-1 items-center justify-center overflow-hidden">
 
-        {/* ═══════════════════════════════════════════════════════
+        {/* ���══════════════════════════════════════════════════════
             PANTALLA DE DEDICATORIA
             Aparece con fade-in cuando el slide actual es tipo "dedicatoria"
         ═══════════════════════════════════════════════════════ */}
@@ -456,11 +551,11 @@ export default function ImageViewer({
           <ChevronLeft className="h-6 w-6" />
         </button>
 
-        <div className="relative flex h-full w-full items-center justify-center px-20 py-4">
+        <div className="relative flex h-full w-full items-center justify-center">
           {/* Layer A */}
           {photoA && (
             <div
-              className="absolute inset-0 flex items-center justify-center px-20 py-4"
+              className="absolute inset-0"
               style={{
                 opacity: topLayer === "A" ? 1 : 0,
                 transition: `opacity ${FADE_DURATION}ms ease-in-out`,
@@ -470,9 +565,9 @@ export default function ImageViewer({
               <Image
                 src={photoA.src}
                 alt={photoA.alt}
-                width={1400}
-                height={1050}
-                className="max-h-[calc(100vh-14rem)] w-auto max-w-full rounded-xl object-contain shadow-2xl"
+                fill
+                className="object-contain"
+                sizes="100vw"
                 priority
               />
             </div>
@@ -481,7 +576,7 @@ export default function ImageViewer({
           {/* Layer B */}
           {photoB && (
             <div
-              className="absolute inset-0 flex items-center justify-center px-20 py-4"
+              className="absolute inset-0"
               style={{
                 opacity: topLayer === "B" ? 1 : 0,
                 transition: `opacity ${FADE_DURATION}ms ease-in-out`,
@@ -491,24 +586,12 @@ export default function ImageViewer({
               <Image
                 src={photoB.src}
                 alt={photoB.alt}
-                width={1400}
-                height={1050}
-                className="max-h-[calc(100vh-14rem)] w-auto max-w-full rounded-xl object-contain shadow-2xl"
+                fill
+                className="object-contain"
+                sizes="100vw"
                 priority
               />
             </div>
-          )}
-
-          {/* Invisible spacer */}
-          {photoA && (
-            <Image
-              src={photoA.src}
-              alt=""
-              aria-hidden="true"
-              width={1400}
-              height={1050}
-              className="invisible max-h-[calc(100vh-14rem)] w-auto max-w-full rounded-xl object-contain"
-            />
           )}
         </div>
 
@@ -525,10 +608,10 @@ export default function ImageViewer({
         {/* Caption overlay */}
         {caption && (
           <div
-            className="pointer-events-none absolute bottom-6 left-1/2 z-10 w-full max-w-2xl -translate-x-1/2 px-6"
+            className="pointer-events-none absolute bottom-6 left-1/2 z-10 w-full max-w-3xl -translate-x-1/2 px-6"
             style={{ zIndex: 10 }}
           >
-            <div className="rounded-xl bg-black/60 px-5 py-3 text-center text-sm leading-relaxed text-white backdrop-blur-sm">
+            <div className="rounded-2xl bg-black/70 px-6 py-4 text-center text-base leading-relaxed text-white backdrop-blur-md md:text-lg md:leading-loose">
               {caption}
             </div>
           </div>
