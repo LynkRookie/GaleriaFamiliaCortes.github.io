@@ -12,13 +12,24 @@ interface ImageViewerProps {
   onPrev: () => void
   onNext: () => void
   onJumpTo?: (index: number) => void
-  music?: string[]
+  // musicSections[0] = canciones sección abuelo, musicSections[1] = abuela, etc.
+  musicSections?: string[][]
 }
 
 // Total time each slide is shown (ms)
-const SLIDESHOW_DURATION = 5_000
+const SLIDESHOW_DURATION = 20_000
 // Duration of the cross-fade overlap (ms) — must be < SLIDESHOW_DURATION
-const FADE_DURATION = 1_500
+const FADE_DURATION = 1_800
+// Time the dedicatoria screen stays visible (ms)
+const DEDICATORIA_DURATION = 20_000
+
+// ── Helpers para discriminar el tipo de slide ──
+function isPhoto(p: Photo): p is Extract<Photo, { src: string }> {
+  return !p.type || p.type === "photo"
+}
+function isDedicatoria(p: Photo): p is Extract<Photo, { type: "dedicatoria" }> {
+  return p.type === "dedicatoria"
+}
 
 export default function ImageViewer({
   photos,
@@ -27,52 +38,56 @@ export default function ImageViewer({
   onPrev,
   onNext,
   onJumpTo,
-  music,
+  musicSections,
 }: ImageViewerProps) {
   const total = photos.length
 
   // ─────────────────────────────────────────────
   // Cross-fade: two fixed layers (A / B).
-  // We swap which layer is "on top" on each navigation.
+  // Only used when the current slide is a photo.
   // ─────────────────────────────────────────────
-  // layerA / layerB hold the photo index each layer is showing
   const [layerA, setLayerA] = useState(currentIndex)
   const [layerB, setLayerB] = useState(currentIndex)
-  // which layer is currently on top (fully opaque)
   const [topLayer, setTopLayer] = useState<"A" | "B">("A")
-  // whether we are mid-transition
-  const [transitioning, setTransitioning] = useState(false)
   const fadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevIndexRef = useRef(currentIndex)
 
-  // When currentIndex changes, start a cross-fade
+  // Resolve a safe photo index for a layer (skip dedicatorias)
+  const safePhotoIndex = useCallback(
+    (idx: number): number => {
+      // Walk backwards to find the nearest photo slide
+      for (let i = idx; i >= 0; i--) {
+        if (isPhoto(photos[i])) return i
+      }
+      return 0
+    },
+    [photos]
+  )
+
   useEffect(() => {
     if (prevIndexRef.current === currentIndex) return
     prevIndexRef.current = currentIndex
 
-    // Cancel any in-flight fade
     if (fadeTimerRef.current) clearTimeout(fadeTimerRef.current)
 
-    // Load the new image into the BOTTOM layer, then bring it to the top
+    // When it's a dedicatoria we still need to update layers so that after
+    // it the photo layers show the right images.
+    const safeIdx = safePhotoIndex(currentIndex)
+
     if (topLayer === "A") {
-      // A is on top → load new image into B, then fade A out / B in
-      setLayerB(currentIndex)
-      // Small delay so the browser paints B before we start fading
+      setLayerB(safeIdx)
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          setTransitioning(true)
           setTopLayer("B")
-          fadeTimerRef.current = setTimeout(() => setTransitioning(false), FADE_DURATION)
+          fadeTimerRef.current = setTimeout(() => {}, FADE_DURATION)
         })
       })
     } else {
-      // B is on top → load new image into A, then fade B out / A in
-      setLayerA(currentIndex)
+      setLayerA(safeIdx)
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          setTransitioning(true)
           setTopLayer("A")
-          fadeTimerRef.current = setTimeout(() => setTransitioning(false), FADE_DURATION)
+          fadeTimerRef.current = setTimeout(() => {}, FADE_DURATION)
         })
       })
     }
@@ -82,6 +97,24 @@ export default function ImageViewer({
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex])
+
+  // ─────────────────────────────────────────────
+  // Dedicatoria fade-in state
+  // ─────────────────────────────────────────────
+  const [dedicatoriaVisible, setDedicatoriaVisible] = useState(false)
+
+  useEffect(() => {
+    if (isDedicatoria(photos[currentIndex])) {
+      // Small delay so CSS transition triggers
+      const t = setTimeout(() => setDedicatoriaVisible(true), 50)
+      return () => {
+        clearTimeout(t)
+        setDedicatoriaVisible(false)
+      }
+    } else {
+      setDedicatoriaVisible(false)
+    }
+  }, [currentIndex, photos])
 
   // ─────────────────────────────────────────────
   // Slideshow
@@ -96,9 +129,13 @@ export default function ImageViewer({
     setIsSlideshow(false)
   }, [])
 
-  // Schedule the next auto-advance
   const currentIndexRef = useRef(currentIndex)
   currentIndexRef.current = currentIndex
+
+  const currentSlide = photos[currentIndex]
+  const currentDuration = isDedicatoria(currentSlide)
+    ? DEDICATORIA_DURATION
+    : SLIDESHOW_DURATION
 
   useEffect(() => {
     if (!isSlideshow) return
@@ -111,12 +148,11 @@ export default function ImageViewer({
       } else {
         onNext()
       }
-    }, SLIDESHOW_DURATION)
+    }, currentDuration)
 
     return () => {
       if (slideshowRef.current) clearTimeout(slideshowRef.current)
     }
-  // Re-run each time a new slide is shown
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSlideshow, currentIndex])
 
@@ -150,35 +186,40 @@ export default function ImageViewer({
   }, [])
 
   // ─────────────────────────────────────────────
-  // Music — playlist with 10s gap between tracks, circular loop
+  // Music — per-section playlist with 10s gap, circular loop
   // ─────────────────────────────────────────────
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const musicGapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const trackIndexRef = useRef(0)
+  const currentSectionRef = useRef(-1)
 
-  const playTrack = useCallback((index: number) => {
-    if (!music || music.length === 0) return
-    const audio = audioRef.current
-    if (!audio) return
-    trackIndexRef.current = index
-    audio.src = music[index]
-    audio.currentTime = 0
-    audio.play().catch(() => {})
-  }, [music])
+  const playTrack = useCallback(
+    (sectionIdx: number, trackIdx: number) => {
+      if (!musicSections || !musicSections[sectionIdx]?.length) return
+      const audio = audioRef.current
+      if (!audio) return
+      trackIndexRef.current = trackIdx
+      audio.src = musicSections[sectionIdx][trackIdx]
+      audio.currentTime = 0
+      audio.play().catch(() => {})
+    },
+    [musicSections]
+  )
 
   // Create the audio element once
   useEffect(() => {
-    if (!music || music.length === 0) return
-    const audio = new Audio(music[0])
+    const audio = new Audio()
     audio.volume = 0.7
     audio.loop = false
     audioRef.current = audio
 
-    // When a track ends, wait 10s then play the next one (circular)
     const handleEnded = () => {
+      if (!musicSections) return
+      const sec = currentSectionRef.current
+      if (sec < 0 || !musicSections[sec]?.length) return
       musicGapTimerRef.current = setTimeout(() => {
-        const next = (trackIndexRef.current + 1) % music.length
-        playTrack(next)
+        const next = (trackIndexRef.current + 1) % musicSections[sec].length
+        playTrack(sec, next)
       }, 10_000)
     }
     audio.addEventListener("ended", handleEnded)
@@ -189,38 +230,65 @@ export default function ImageViewer({
       if (musicGapTimerRef.current) clearTimeout(musicGapTimerRef.current)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [music])
+  }, [])
+
+  // Detect section changes and switch music accordingly
+  useEffect(() => {
+    if (!isSlideshow || !musicSections) return
+
+    const slide = photos[currentIndex]
+    const section =
+      isPhoto(slide) && slide.musicSection !== undefined
+        ? slide.musicSection
+        : currentSectionRef.current
+
+    if (section === currentSectionRef.current) return
+
+    // Section changed — stop current track, start new section from track 0
+    if (musicGapTimerRef.current) clearTimeout(musicGapTimerRef.current)
+    audioRef.current?.pause()
+    currentSectionRef.current = section
+    playTrack(section, 0)
+  }, [currentIndex, isSlideshow, musicSections, photos, playTrack])
 
   // Play / pause with the slideshow
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
-    if (isSlideshow) {
-      playTrack(0)
+    if (isSlideshow && musicSections) {
+      // Find the section of the current slide
+      const slide = photos[currentIndex]
+      const section =
+        isPhoto(slide) && slide.musicSection !== undefined ? slide.musicSection : 0
+      currentSectionRef.current = section
+      playTrack(section, 0)
     } else {
       audio.pause()
       if (musicGapTimerRef.current) clearTimeout(musicGapTimerRef.current)
+      currentSectionRef.current = -1
     }
-  }, [isSlideshow, playTrack])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSlideshow])
 
   // ─────────────────────────────────────────────
-  // Download
+  // Download (only for photo slides)
   // ─────────────────────────────────────────────
   const handleDownload = useCallback(async () => {
-    const src = photos[currentIndex].src
+    const slide = photos[currentIndex]
+    if (!isPhoto(slide)) return
     try {
-      const response = await fetch(src)
+      const response = await fetch(slide.src)
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = src.split("/").pop() || `foto-${currentIndex + 1}.jpg`
+      a.download = slide.src.split("/").pop() || `foto-${currentIndex + 1}.jpg`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
     } catch {
-      window.open(src, "_blank")
+      if (isPhoto(slide)) window.open(slide.src, "_blank")
     }
   }, [photos, currentIndex])
 
@@ -229,13 +297,13 @@ export default function ImageViewer({
   // ─────────────────────────────────────────────
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === "Escape")     { stopSlideshow(); onClose() }
-      if (e.key === "ArrowLeft")  { stopSlideshow(); onPrev() }
-      if (e.key === "ArrowRight") { stopSlideshow(); onNext() }
-      if (e.key === " ")          { e.preventDefault(); toggleSlideshow() }
-      if (e.key === "f" || e.key === "F") { toggleFullscreen() }
+      if (e.key === "Escape")                     { stopSlideshow(); onClose() }
+      if (e.key === "ArrowLeft")                  { stopSlideshow(); onPrev() }
+      if (e.key === "ArrowRight")                 { stopSlideshow(); onNext() }
+      if (e.key === " ")                          { e.preventDefault(); toggleSlideshow() }
+      if (e.key === "f" || e.key === "F")         { toggleFullscreen() }
     },
-    [onClose, onPrev, onNext, toggleSlideshow, stopSlideshow, toggleFullscreen],
+    [onClose, onPrev, onNext, toggleSlideshow, stopSlideshow, toggleFullscreen]
   )
 
   useEffect(() => {
@@ -247,7 +315,7 @@ export default function ImageViewer({
     }
   }, [handleKeyDown])
 
-  // Thumbnail strip scroll
+  // Thumbnail scroll
   const thumbsRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const container = thumbsRef.current
@@ -259,15 +327,19 @@ export default function ImageViewer({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (slideshowRef.current)   clearTimeout(slideshowRef.current)
-      if (fadeTimerRef.current)   clearTimeout(fadeTimerRef.current)
-      if (musicGapTimerRef.current) clearTimeout(musicGapTimerRef.current)
+      if (slideshowRef.current)       clearTimeout(slideshowRef.current)
+      if (fadeTimerRef.current)       clearTimeout(fadeTimerRef.current)
+      if (musicGapTimerRef.current)   clearTimeout(musicGapTimerRef.current)
       audioRef.current?.pause()
     }
   }, [])
 
-  // Caption for the currently visible photo
-  const caption = photos[currentIndex].caption ?? photos[currentIndex].alt
+  // Resolve caption for the current photo slide
+  const caption = isPhoto(currentSlide) ? (currentSlide.caption ?? "") : ""
+
+  // Safe photo to show in each layer
+  const photoA = isPhoto(photos[layerA]) ? (photos[layerA] as Extract<Photo, { src: string }>) : null
+  const photoB = isPhoto(photos[layerB]) ? (photos[layerB] as Extract<Photo, { src: string }>) : null
 
   return (
     <div
@@ -283,7 +355,7 @@ export default function ImageViewer({
           <div
             key={progressKey}
             className="slideshow-progress h-full origin-left bg-primary"
-            style={{ animationDuration: `${SLIDESHOW_DURATION}ms` }}
+            style={{ animationDuration: `${currentDuration}ms` }}
           />
         </div>
       )}
@@ -319,15 +391,17 @@ export default function ImageViewer({
             {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
           </button>
 
-          {/* Download */}
-          <button
-            onClick={handleDownload}
-            aria-label="Descargar imagen"
-            title="Descargar imagen"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-          >
-            <Download className="h-4 w-4" />
-          </button>
+          {/* Download — only shown for photo slides */}
+          {isPhoto(currentSlide) && (
+            <button
+              onClick={handleDownload}
+              aria-label="Descargar imagen"
+              title="Descargar imagen"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+            >
+              <Download className="h-4 w-4" />
+            </button>
+          )}
 
           {/* Close */}
           <button
@@ -340,9 +414,38 @@ export default function ImageViewer({
         </div>
       </div>
 
-      {/* ── Main image area ── */}
+      {/* ── Main area ── */}
       <div className="relative flex flex-1 items-center justify-center overflow-hidden">
 
+        {/* ═══════════════════════════════════════════════════════
+            PANTALLA DE DEDICATORIA
+            Aparece con fade-in cuando el slide actual es tipo "dedicatoria"
+        ═══════════════════════════════════════════════════════ */}
+        {isDedicatoria(currentSlide) && (
+          <div
+            className="absolute inset-0 z-20 flex items-center justify-center px-8"
+            style={{
+              background: (currentSlide as Extract<Photo, { type: "dedicatoria" }>).bg ?? "#000",
+              opacity: dedicatoriaVisible ? 1 : 0,
+              transition: `opacity ${FADE_DURATION}ms ease-in-out`,
+            }}
+          >
+            <p className="max-w-2xl text-center text-3xl font-light leading-relaxed tracking-wide text-white md:text-4xl lg:text-5xl">
+              {(currentSlide as Extract<Photo, { type: "dedicatoria" }>).text
+                .split("\n")
+                .map((line, i) => (
+                  <span key={i}>
+                    {line}
+                    <br />
+                  </span>
+                ))}
+            </p>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════════════
+            FOTO — Cross-fade layers A & B
+        ═══════════════════════════════════════════════════════ */}
         {/* Prev button */}
         <button
           onClick={() => { stopSlideshow(); onPrev() }}
@@ -353,56 +456,60 @@ export default function ImageViewer({
           <ChevronLeft className="h-6 w-6" />
         </button>
 
-        {/* ── Cross-fade stack: two permanent layers ── */}
         <div className="relative flex h-full w-full items-center justify-center px-20 py-4">
-
           {/* Layer A */}
-          <div
-            className="absolute inset-0 flex items-center justify-center px-20 py-4"
-            style={{
-              opacity: topLayer === "A" ? 1 : 0,
-              transition: `opacity ${FADE_DURATION}ms ease-in-out`,
-              zIndex: topLayer === "A" ? 2 : 1,
-            }}
-          >
-            <Image
-              src={photos[layerA].src}
-              alt={photos[layerA].alt}
-              width={1400}
-              height={1050}
-              className="max-h-[calc(100vh-14rem)] w-auto max-w-full rounded-xl object-contain shadow-2xl"
-              priority
-            />
-          </div>
+          {photoA && (
+            <div
+              className="absolute inset-0 flex items-center justify-center px-20 py-4"
+              style={{
+                opacity: topLayer === "A" ? 1 : 0,
+                transition: `opacity ${FADE_DURATION}ms ease-in-out`,
+                zIndex: topLayer === "A" ? 2 : 1,
+              }}
+            >
+              <Image
+                src={photoA.src}
+                alt={photoA.alt}
+                width={1400}
+                height={1050}
+                className="max-h-[calc(100vh-14rem)] w-auto max-w-full rounded-xl object-contain shadow-2xl"
+                priority
+              />
+            </div>
+          )}
 
           {/* Layer B */}
-          <div
-            className="absolute inset-0 flex items-center justify-center px-20 py-4"
-            style={{
-              opacity: topLayer === "B" ? 1 : 0,
-              transition: `opacity ${FADE_DURATION}ms ease-in-out`,
-              zIndex: topLayer === "B" ? 2 : 1,
-            }}
-          >
+          {photoB && (
+            <div
+              className="absolute inset-0 flex items-center justify-center px-20 py-4"
+              style={{
+                opacity: topLayer === "B" ? 1 : 0,
+                transition: `opacity ${FADE_DURATION}ms ease-in-out`,
+                zIndex: topLayer === "B" ? 2 : 1,
+              }}
+            >
+              <Image
+                src={photoB.src}
+                alt={photoB.alt}
+                width={1400}
+                height={1050}
+                className="max-h-[calc(100vh-14rem)] w-auto max-w-full rounded-xl object-contain shadow-2xl"
+                priority
+              />
+            </div>
+          )}
+
+          {/* Invisible spacer */}
+          {photoA && (
             <Image
-              src={photos[layerB].src}
-              alt={photos[layerB].alt}
+              src={photoA.src}
+              alt=""
+              aria-hidden="true"
               width={1400}
               height={1050}
-              className="max-h-[calc(100vh-14rem)] w-auto max-w-full rounded-xl object-contain shadow-2xl"
-              priority
+              className="invisible max-h-[calc(100vh-14rem)] w-auto max-w-full rounded-xl object-contain"
             />
-          </div>
-
-          {/* Invisible spacer to keep container height stable */}
-          <Image
-            src={photos[currentIndex].src}
-            alt=""
-            aria-hidden="true"
-            width={1400}
-            height={1050}
-            className="invisible max-h-[calc(100vh-14rem)] w-auto max-w-full rounded-xl object-contain"
-          />
+          )}
         </div>
 
         {/* Next button */}
@@ -415,7 +522,7 @@ export default function ImageViewer({
           <ChevronRight className="h-6 w-6" />
         </button>
 
-        {/* ── Caption overlay (bottom of image area) ── */}
+        {/* Caption overlay */}
         {caption && (
           <div
             className="pointer-events-none absolute bottom-6 left-1/2 z-10 w-full max-w-2xl -translate-x-1/2 px-6"
@@ -428,26 +535,49 @@ export default function ImageViewer({
         )}
       </div>
 
-      {/* ── Thumbnail strip ── */}
+      {/* ── Thumbnail strip (skip dedicatoria slides) ── */}
       <div className="shrink-0 px-4 pb-5 pt-3">
         <div
           ref={thumbsRef}
           className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {photos.map((p, i) => (
-            <button
-              key={p.src}
-              onClick={() => { stopSlideshow(); onJumpTo?.(i) }}
-              aria-label={`Ir a imagen ${i + 1}`}
-              className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-200 ${
-                i === currentIndex
-                  ? "border-primary opacity-100 scale-105"
-                  : "border-transparent opacity-40 hover:opacity-70"
-              }`}
-            >
-              <Image src={p.src} alt={p.alt} fill className="object-cover" sizes="56px" />
-            </button>
-          ))}
+          {photos.map((p, i) => {
+            if (isDedicatoria(p)) {
+              // Show a placeholder for the dedicatoria in the thumbnail strip
+              return (
+                <button
+                  key={`dedicatoria-${i}`}
+                  onClick={() => { stopSlideshow(); onJumpTo?.(i) }}
+                  aria-label="Pantalla dedicatoria"
+                  className={`relative flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                    i === currentIndex
+                      ? "border-primary opacity-100 scale-105"
+                      : "border-transparent opacity-40 hover:opacity-70"
+                  } bg-white/5`}
+                >
+                  <span className="text-[9px] text-white/60 leading-tight text-center px-1">
+                    ded.
+                  </span>
+                </button>
+              )
+            }
+
+            const photo = p as Extract<Photo, { src: string }>
+            return (
+              <button
+                key={photo.src}
+                onClick={() => { stopSlideshow(); onJumpTo?.(i) }}
+                aria-label={`Ir a imagen ${i + 1}`}
+                className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-200 ${
+                  i === currentIndex
+                    ? "border-primary opacity-100 scale-105"
+                    : "border-transparent opacity-40 hover:opacity-70"
+                }`}
+              >
+                <Image src={photo.src} alt={photo.alt} fill className="object-cover" sizes="56px" />
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>

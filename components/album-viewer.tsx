@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import type { Album } from "@/lib/gallery-data"
+import type { Album, Photo } from "@/lib/gallery-data"
 import ImageViewer from "@/components/image-viewer"
 import ShareModal from "@/components/share-modal"
 import {
@@ -112,30 +112,34 @@ export default function AlbumViewer({ album }: AlbumViewerProps) {
           className="mx-auto max-w-6xl px-4 py-8 sm:px-8 pb-20"
         >
           <div className="columns-2 gap-3 sm:columns-3 md:columns-4">
-            {album.photos.map((photo, index) => (
-              <button
-                key={photo.src}
-                onClick={() => openViewer(index)}
-                aria-label={`Ver imagen: ${photo.alt}`}
-                className="group relative mb-3 block w-full overflow-hidden rounded-xl bg-muted"
-              >
-                <Image
-                  src={photo.src}
-                  alt={photo.alt}
-                  width={600}
-                  height={800}
-                  className="w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                />
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 transition-colors duration-200 group-hover:bg-black/25" />
-                {photo.caption && (
-                  <div className="absolute bottom-0 left-0 right-0 translate-y-full px-3 py-2 text-xs font-medium text-white backdrop-blur-sm bg-black/60 transition-transform duration-200 group-hover:translate-y-0 rounded-b-xl">
-                    {photo.caption}
-                  </div>
-                )}
-              </button>
-            ))}
+            {album.photos.map((photo, index) => {
+              // Dedicatoria slides are not shown in the grid
+              if (photo.type === "dedicatoria") return null
+              const p = photo as Extract<Photo, { src: string }>
+              return (
+                <button
+                  key={p.src}
+                  onClick={() => openViewer(index)}
+                  aria-label={`Ver imagen: ${p.alt}`}
+                  className="group relative mb-3 block w-full overflow-hidden rounded-xl bg-muted"
+                >
+                  <Image
+                    src={p.src}
+                    alt={p.alt}
+                    width={600}
+                    height={800}
+                    className="w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  />
+                  <div className="absolute inset-0 bg-black/0 transition-colors duration-200 group-hover:bg-black/25" />
+                  {p.caption && (
+                    <div className="absolute bottom-0 left-0 right-0 translate-y-full px-3 py-2 text-xs font-medium text-white backdrop-blur-sm bg-black/60 transition-transform duration-200 group-hover:translate-y-0 rounded-b-xl">
+                      {p.caption}
+                    </div>
+                  )}
+                </button>
+              )
+            })}
           </div>
         </section>
       </main>
@@ -149,7 +153,7 @@ export default function AlbumViewer({ album }: AlbumViewerProps) {
           onPrev={handlePrev}
           onNext={handleNext}
           onJumpTo={handleJumpTo}
-          music={album.music}
+          musicSections={album.musicSections}
         />
       )}
 
