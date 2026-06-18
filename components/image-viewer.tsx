@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useState, useRef } from "react"
 import Image from "next/image"
-import { X, ChevronLeft, ChevronRight, Download, Play, Pause, Maximize, Minimize } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Download, Play, Pause, Maximize, Minimize, Volume2, VolumeX } from "lucide-react"
 import type { Photo } from "@/lib/gallery-data"
 
 interface ImageViewerProps {
@@ -273,11 +273,12 @@ export default function ImageViewer({
 
   // ─────────────────────────────────────────────
   // Text-to-Speech (TTS)
-  // When slideshow reaches a photo with a caption:
-  //   1. Music fades down to 15% over 1.2s
-  //   2. Web Speech API reads the caption in natural Spanish
-  //   3. Music fades back up to 70% when speech ends
+  // ── Para ACTIVAR o DESACTIVAR la voz desde código ──
+  // Cambia el valor inicial de useState(true) a useState(false)
+  // para que arranque desactivada por defecto.
+  // El botón del micrófono en la barra también la activa/desactiva en tiempo real.
   // ─────────────────────────────────────────────
+  const [ttsEnabled, setTtsEnabled] = useState(true)
   const ttsRef = useRef<SpeechSynthesisUtterance | null>(null)
 
   const fadeVolume = useCallback(
@@ -304,43 +305,59 @@ export default function ImageViewer({
       if (!("speechSynthesis" in window)) return
       window.speechSynthesis.cancel()
 
-      const utter = new SpeechSynthesisUtterance(text)
-      utter.lang = "es-ES"
-      utter.rate = 0.88   // un poco más lento para que se entienda bien
-      utter.pitch = 1.05
-      utter.volume = 1
+      const doSpeak = () => {
+        const utter = new SpeechSynthesisUtterance(text)
+        utter.lang = "es-CL"   // chileno primero, suena más cercano
+        utter.rate = 0.82      // más lento = más natural y claro
+        utter.pitch = 1.0
+        utter.volume = 1
 
-      // Pick a natural-sounding Spanish voice if available
+        // Prioridad de voces: Google (más natural) > otras voces en español
+        const voices = window.speechSynthesis.getVoices()
+        const esVoices = voices.filter((v) => v.lang.startsWith("es"))
+
+        const preferred =
+          // 1. Google español (la más natural en Chrome)
+          esVoices.find((v) => v.name.toLowerCase().includes("google")) ||
+          // 2. Voces nativas del sistema por nombre
+          esVoices.find((v) =>
+            ["mónica", "paulina", "jorge", "lucia", "diego", "carlos", "elena", "juan"].some(
+              (n) => v.name.toLowerCase().includes(n)
+            )
+          ) ||
+          // 3. Cualquier voz en español disponible
+          esVoices[0]
+
+        if (preferred) utter.voice = preferred
+
+        utter.onstart = () => {
+          fadeVolume(audioRef.current?.volume ?? 0.7, 0.12, 1200)
+        }
+        utter.onend = () => {
+          fadeVolume(audioRef.current?.volume ?? 0.12, 0.7, 1500)
+        }
+
+        ttsRef.current = utter
+        setTimeout(() => window.speechSynthesis.speak(utter), 400)
+      }
+
+      // Las voces pueden no estar listas aún — esperar si es necesario
       const voices = window.speechSynthesis.getVoices()
-      const preferred = voices.find(
-        (v) =>
-          v.lang.startsWith("es") &&
-          (v.name.toLowerCase().includes("google") ||
-            v.name.toLowerCase().includes("mónica") ||
-            v.name.toLowerCase().includes("paulina") ||
-            v.name.toLowerCase().includes("jorge") ||
-            v.name.toLowerCase().includes("lucia") ||
-            v.name.toLowerCase().includes("diego"))
-      )
-      if (preferred) utter.voice = preferred
-
-      utter.onstart = () => {
-        fadeVolume(audioRef.current?.volume ?? 0.7, 0.12, 1200)
+      if (voices.length > 0) {
+        doSpeak()
+      } else {
+        window.speechSynthesis.onvoiceschanged = () => {
+          window.speechSynthesis.onvoiceschanged = null
+          doSpeak()
+        }
       }
-      utter.onend = () => {
-        fadeVolume(audioRef.current?.volume ?? 0.12, 0.7, 1500)
-      }
-
-      ttsRef.current = utter
-      // Small delay so fade starts smoothly before speech begins
-      setTimeout(() => window.speechSynthesis.speak(utter), 300)
     },
     [fadeVolume]
   )
 
   // Trigger TTS whenever the slide changes during slideshow
   useEffect(() => {
-    if (!isSlideshow) {
+    if (!isSlideshow || !ttsEnabled) {
       window.speechSynthesis?.cancel()
       return
     }
@@ -357,12 +374,12 @@ export default function ImageViewer({
       window.speechSynthesis?.cancel()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentIndex, isSlideshow])
+  }, [currentIndex, isSlideshow, ttsEnabled])
 
-  // Stop TTS when slideshow stops or viewer closes
+  // Stop TTS when slideshow stops or tts is disabled
   useEffect(() => {
-    if (!isSlideshow) window.speechSynthesis?.cancel()
-  }, [isSlideshow])
+    if (!isSlideshow || !ttsEnabled) window.speechSynthesis?.cancel()
+  }, [isSlideshow, ttsEnabled])
 
   // ─────────────────────────────────────────────
   // Download (only for photo slides)
@@ -476,6 +493,20 @@ export default function ImageViewer({
             {isSlideshow ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </button>
 
+          {/* TTS toggle — activar/desactivar la voz */}
+          <button
+            onClick={() => setTtsEnabled((v) => !v)}
+            aria-label={ttsEnabled ? "Desactivar voz" : "Activar voz"}
+            title={ttsEnabled ? "Desactivar voz (leerá las descripciones)" : "Activar voz"}
+            className={`flex h-9 w-9 items-center justify-center rounded-full transition ${
+              ttsEnabled
+                ? "bg-white/10 text-white hover:bg-white/20"
+                : "bg-white/5 text-white/30 hover:bg-white/10"
+            }`}
+          >
+            {ttsEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </button>
+
           {/* Fullscreen */}
           <button
             onClick={toggleFullscreen}
@@ -510,7 +541,7 @@ export default function ImageViewer({
       </div>
 
       {/* ── Main area ── */}
-      <div className="relative flex flex-1 items-center justify-center overflow-hidden">
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden min-h-0">
 
         {/* ���══════════════════════════════════════════════════════
             PANTALLA DE DEDICATORIA
