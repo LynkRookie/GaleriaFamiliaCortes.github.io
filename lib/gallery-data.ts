@@ -99,8 +99,7 @@ export const albums: Album[] = [
     musicSections: [
       // Sección 0 — Canciones para el abuelo
       [
-        "/albums/vacaciones/Piero - Mi viejo (Letra) Viejo, mi querido viejo.mp3",
-        "/albums/vacaciones/Vicente Fernández - El Hombre Que Más Te Amó - Cover Audio.mp3","/albums/vacaciones/Gervasio - Con Una Pala y Un Sombrero.mp3","/albums/vacaciones/Richard Clayderman - Ballade Pour Adeline (from A Night In Budapest).mp3"
+        "/albums/vacaciones/Piero - Mi viejo (Letra) Viejo, mi querido viejo.mp3","/albums/vacaciones/Gervasio - Con Una Pala y Un Sombrero.mp3","/albums/vacaciones/Richard Clayderman - Ballade Pour Adeline (from A Night In Budapest).mp3", "/albums/vacaciones/Vicente Fernández - El Hombre Que Más Te Amó - Cover Audio.mp3"
         // Agrega más canciones del abuelo aquí:
         // "/albums/vacaciones/musica3.mp3",
       ],

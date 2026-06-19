@@ -20,7 +20,7 @@ interface ImageViewerProps {
 
 // Total time each slide is shown (ms)
 // ← AQUI cambias la duración de cada foto en el slideshow
-const SLIDESHOW_DURATION = 15_000
+const SLIDESHOW_DURATION = 12_000
 // Duration of the cross-fade overlap (ms) — must be < SLIDESHOW_DURATION
 const FADE_DURATION = 1_800
 // Time the dedicatoria screen stays visible (ms)
