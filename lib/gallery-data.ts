@@ -367,7 +367,7 @@ export const albums: Album[] = [
       // ═══════════════���════════════════════════════════════════
       {
         type: "dedicatoria",
-        text: "Ahora que nuestro padre no está con nosotros,usted es nuestro madre y padre,\nen el cual nosotros la queremos\ny amamos todos los días.",
+        text: "Aunque nuestro padre ya no esté a nuestro lado, usted ha sabido ocupar ambos lugares con amor, sacrificio y valentía. Gracias por ser nuestra madre y también nuestro padre; la queremos y la amamos profundamente todos los días de nuestra vida.",
       },
 
       // ════════════════════════════════════════════════════════
