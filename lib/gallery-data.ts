@@ -88,14 +88,14 @@ export const albums: Album[] = [
       // Sección 0 — Canciones para el abuelo
       [
         "/albums/vacaciones/Piero - Mi viejo (Letra) Viejo, mi querido viejo.mp3",
-        "/albums/vacaciones/Lyrics).mp3",
+        "/albums/vacaciones/Gervasio - Con Una Pala y Un Sombrero.mp3",
         // Agrega más canciones del abuelo aquí:
         // "/albums/vacaciones/musica3.mp3",
       ],
       // Sección 1 — Canciones para la abuela
       // Coloca tus archivos en /public/albums/abuela/ (o donde prefieras)
       [
-        "/albums/abuela/musica.mp3",
+        "/albums/vacaciones/abuela/Me queda mi madre - Jay Murrieta.mp3",
         // Agrega más canciones de la abuela aquí:
         // "/albums/abuela/musica2.mp3",
       ],
@@ -326,6 +326,80 @@ export const albums: Album[] = [
         type: "dedicatoria",
         text: "Ahora que nuestro padre no está con nosotros,\nusted es nuestro madre y padre,\nen el cual nosotros la queremos\ny amamos todos los días.",
       },
+ ...makePhotos(
+        [
+          "/albums/vacaciones/abuela/foto1.jpeg",
+          "/albums/vacaciones/abuela/foto2.jpeg",
+          "/albums/vacaciones/abuela/foto3.jpeg",
+          "/albums/vacaciones/abuela/foto5.jpeg",
+          "/albums/vacaciones/abuela/foto6.jpeg",
+          "/albums/vacaciones/abuela/foto7.jpeg",
+          "/albums/vacaciones/abuela/foto8.jpeg",
+          "/albums/vacaciones/abuela/foto9.jpeg",
+          "/albums/vacaciones/abuela/foto10.jpeg",
+          "/albums/vacaciones/abuela/foto11.jpeg",
+          "/albums/vacaciones/abuela/foto12.jpeg",
+          "/albums/vacaciones/abuela/foto13.jpeg",
+          "/albums/vacaciones/abuela/foto14.jpeg",
+          "/albums/vacaciones/abuela/foto15.jpeg",
+          "/albums/vacaciones/abuela/foto16.jpeg",
+          "/albums/vacaciones/abuela/foto17.jpeg",
+          "/albums/vacaciones/abuela/foto18.jpeg",
+          "/albums/vacaciones/abuela/foto19.jpeg",
+          "/albums/vacaciones/abuela/foto20.jpeg",
+          "/albums/vacaciones/abuela/foto21.jpeg",
+          "/albums/vacaciones/abuela/foto22.jpeg",
+          "/albums/vacaciones/abuela/foto23.jpeg",
+          "/albums/vacaciones/abuela/foto24.jpeg",
+          "/albums/vacaciones/abuela/foto25.jpeg",
+          "/albums/vacaciones/abuela/foto26.jpeg",
+          "/albums/vacaciones/abuela/foto27.jpeg",
+          "/albums/vacaciones/abuela/foto28.jpeg",
+          "/albums/vacaciones/abuela/foto29.jpeg",
+          "/albums/vacaciones/abuela/foto30.jpeg",
+          "/albums/vacaciones/abuela/foto31.jpeg",
+          "/albums/vacaciones/abuela/foto32.jpeg",
+          "/albums/vacaciones/abuela/foto33.jpeg",
+          "/albums/vacaciones/abuela/foto34.jpeg",
+          "/albums/vacaciones/abuela/foto35.jpeg",
+          "/albums/vacaciones/abuela/foto36.jpeg",
+          "/albums/vacaciones/abuela/foto37.jpeg",
+          "/albums/vacaciones/abuela/foto38.jpeg",
+          "/albums/vacaciones/abuela/foto39.jpeg",
+          "/albums/vacaciones/abuela/foto40.jpeg",
+          "/albums/vacaciones/abuela/foto41.jpeg",
+          "/albums/vacaciones/abuela/foto42.jpeg",
+          "/albums/vacaciones/abuela/foto43.jpeg",
+          "/albums/vacaciones/abuela/foto44.jpeg",
+          "/albums/vacaciones/abuela/foto45.jpeg",
+          "/albums/vacaciones/abuela/foto46.jpeg",
+          "/albums/vacaciones/abuela/foto47.jpeg",
+          "/albums/vacaciones/abuela/foto48.jpeg",
+          "/albums/vacaciones/abuela/foto49.jpeg",
+          "/albums/vacaciones/abuela/foto50.jpeg",
+           "/albums/vacaciones/abuela/foto51.jpeg",
+          "/albums/vacaciones/abuela/foto52.jpeg",
+          "/albums/vacaciones/abuela/foto53.jpeg",
+          "/albums/vacaciones/abuela/foto54.jpeg",
+          "/albums/vacaciones/abuela/foto55.jpeg",
+          "/albums/vacaciones/abuela/foto56.jpeg",
+          "/albums/vacaciones/abuela/foto57.jpeg",
+          "/albums/vacaciones/abuela/foto58.jpeg",
+          "/albums/vacaciones/abuela/foto59.jpeg",
+          "/albums/vacaciones/abuela/foto60.jpeg",
+          "/albums/vacaciones/abuela/foto61.jpeg",
+          "/albums/vacaciones/abuela/foto62.jpeg",
+          "/albums/vacaciones/abuela/foto63.jpeg",
+        ],
+        {
+          // ── Captions del abuelo ───────────────────────────────
+          // Índice 0 = primera foto, 1 = segunda, etc.
+          // Si no pones caption, la foto aparece sin cuadro de descripción.
+          // Para agregar más, copia el formato: 5: "Tu mensaje aquí",
+          0:   "Te doy las gracias por todo me siento orgulloso de ti mamá me siento feliz por tenerte y tener una madre hermosa luchadora comprensiva , cariñosa y gracias por tus consejos tan sabio han sido importante para mí en mi vida agradecido de ti Tu sabes cuanto te amo mamita,Gracias por compartir lindo momento conmigo doy gracias adiós por tenerte a mi lado mamita gracias gracias ❤️",
+        },
+        0 // musicSection 0 = canciones del abuelo
+      ),
 
       // ════════════════════════════════════════════════════════
       // FOTOS DE LA ABUELA — agrega aquí tus fotos
