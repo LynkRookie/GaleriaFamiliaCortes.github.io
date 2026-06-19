@@ -25,6 +25,10 @@ const SLIDESHOW_DURATION = 15_000
 const FADE_DURATION = 1_800
 // Time the dedicatoria screen stays visible (ms)
 const DEDICATORIA_DURATION = 20_000
+// Minimum time the intro slide stays visible (ms) — at least 60s
+const INTRO_MIN_DURATION = 60_000
+// Maximum time the intro slide stays visible (ms) — at most 3 min
+const INTRO_MAX_DURATION = 180_000
 
 // ── Helpers para discriminar el tipo de slide ──
 function isPhoto(p: Photo): p is Extract<Photo, { src: string }> {
@@ -137,8 +141,11 @@ export default function ImageViewer({
   currentIndexRef.current = currentIndex
 
   const currentSlide = photos[currentIndex]
+  const isCurrentIntro = isPhoto(currentSlide) && (currentSlide as Extract<Photo, { src: string }>).isIntro
   const currentDuration = isDedicatoria(currentSlide)
     ? DEDICATORIA_DURATION
+    : isCurrentIntro
+    ? INTRO_MIN_DURATION
     : SLIDESHOW_DURATION
 
   useEffect(() => {
@@ -302,14 +309,14 @@ export default function ImageViewer({
         }
         audio.addEventListener("ended", handleIntroEnded, { once: true })
 
-        // Also cap at 35s max — fade out before it ends naturally if needed
+        // Also cap at INTRO_MAX_DURATION (3 min) — fade out before it ends naturally if needed
         const cap = setTimeout(() => {
           fadeOutAndStop(audio, 3000)
           setTimeout(() => {
             currentSectionRef.current = 0
             playTrack(0, 0)
           }, 3200)
-        }, 35_000)
+        }, INTRO_MAX_DURATION)
 
         return () => {
           clearTimeout(cap)
