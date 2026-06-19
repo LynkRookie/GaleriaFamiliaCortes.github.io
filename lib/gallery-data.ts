@@ -24,6 +24,8 @@ export type Photo =
       // Índice musical: qué lista de música usar durante este slide
       // 0 = musicSections[0] (abuelo), 1 = musicSections[1] (abuela), etc.
       musicSection?: number
+      // true = esta es la primera foto y debe sonar la introSong del álbum
+      isIntro?: boolean
     }
   | {
       type: "dedicatoria"
@@ -45,6 +47,10 @@ export interface Album {
   // musicSections[1] = canciones para la segunda sección (abuela)
   // Coloca los archivos MP3 en /public/albums/<carpeta>/
   musicSections?: string[][]
+  // Canción de intro para la primera foto del abuelo.
+  // Suena sola, dura máximo ~35s y se difumina al terminar antes de pasar a musicSections[0].
+  // ← PON AQUÍ la ruta de tu canción de intro cuando la tengas.
+  introSong?: string
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -79,8 +85,14 @@ export const albums: Album[] = [
     cover: "/albums/vacaciones/foto1.jpg",
     date: "Junio 2026",
 
+    // ── Canción de intro — solo suena en la PRIMERA foto del abuelo ──────
+    // Máximo ~35 segundos. Se difumina sola al terminar y luego
+    // comienza la playlist normal del abuelo (musicSections[0]).
+    // Pon aquí la ruta de tu archivo MP3 cuando lo tengas:
+    introSong: "/albums/vacaciones/intro.mp3",
+
     // ── Música por sección ────────────────────────────────────
-    // musicSections[0] → suena durante las fotos del ABUELO
+    // musicSections[0] → suena durante las fotos del ABUELO (desde foto 2 en adelante)
     // musicSections[1] → suena durante las fotos de la ABUELA
     // Al terminar cada canción, espera 10s y pasa a la siguiente (bucle circular).
     // Coloca los archivos MP3 en la carpeta correspondiente dentro de /public/albums/
@@ -88,16 +100,16 @@ export const albums: Album[] = [
       // Sección 0 — Canciones para el abuelo
       [
         "/albums/vacaciones/Piero - Mi viejo (Letra) Viejo, mi querido viejo.mp3",
-        "/albums/vacaciones/Gervasio - Con Una Pala y Un Sombrero.mp3",
+        "/albums/vacaciones/Vicente Fernández - El Hombre Que Más Te Amó - Cover Audio.mp3","/albums/vacaciones/Gervasio - Con Una Pala y Un Sombrero.mp3","/albums/vacaciones/Richard Clayderman - Ballade Pour Adeline (from A Night In Budapest).mp3"
         // Agrega más canciones del abuelo aquí:
         // "/albums/vacaciones/musica3.mp3",
       ],
       // Sección 1 — Canciones para la abuela
-      // Coloca tus archivos en /public/albums/abuela/ (o donde prefieras)
+      // Coloca tus archivos en /public/albums/vacaciones/abuela/
       [
         "/albums/vacaciones/abuela/Me queda mi madre - Jay Murrieta.mp3",
         // Agrega más canciones de la abuela aquí:
-        // "/albums/abuela/musica2.mp3",
+        // "/albums/vacaciones/abuela/musica2.mp3",
       ],
     ],
 
@@ -106,9 +118,18 @@ export const albums: Album[] = [
       // FOTOS DEL ABUELO — Héctor Cortés
       // Agrega o quita rutas aquí. musicSection: 0 = canciones del abuelo.
       // ════════════════════════════════════════════════════════
+      // ── Primera foto — suena la introSong ────────────────────
+      {
+        type: "photo",
+        src: "/albums/vacaciones/foto1.jpg",
+        alt: "Foto 1",
+        caption: "El comienzo de un viaje lleno de momentos inolvidables junto a la familia",
+        musicSection: 0,
+        isIntro: true,
+      },
+      // ── Resto de fotos del abuelo ─────────────────────────────
       ...makePhotos(
         [
-          "/albums/vacaciones/foto1.jpg",
           "/albums/vacaciones/foto2.jpg",
           "/albums/vacaciones/foto3.jpg",
           "/albums/vacaciones/foto 5.jpeg",
@@ -305,13 +326,11 @@ export const albums: Album[] = [
         ],
         {
           // ── Captions del abuelo ───────────────────────────────
-          // Índice 0 = primera foto, 1 = segunda, etc.
-          // Si no pones caption, la foto aparece sin cuadro de descripción.
+          // Índice 0 aquí = foto2 (la foto1 ya está separada arriba con isIntro).
           // Para agregar más, copia el formato: 5: "Tu mensaje aquí",
-          0:   "El comienzo de un viaje lleno de momentos inolvidables junto a la familia",
-          57:  "Que tema más entretenido con mis hijos, nuestras viejas nos perdonarán que las engañamos",
-          118: "Papá cuánta falta me haces. Hoy vives en el cielo pero también en mi corazón, te extraño mucho papá. Gracias por tus lindos consejos que me diste, gracias por el amor que me entregaste, gracias por ser mi amigo. Gracias por el tiempo que me dedicaste, no te imaginas cuánto te extraño de escuchar tu voz, ver tu mirada, sentir tu sonrisa. No sabes cuánto te extraño de tenerte a mi lado. La única manera de verte es viendo tus fotos, pero mis ojos se llenan de lágrimas. Pero sé que tú quieres que siga adelante, mi bello ángel, sé que me das la fuerza para seguir adelante. Te quiero mucho, te recordaré por siempre, sé que algún día nos volveremos a ver y estaremos juntos otra vez. Te amo, te quiero más allá de las estrellas. PAPÁ.",
-          155: "Te amo hasta el infinito y más allá, me haces mucha falta Papá, gracias por tanto y por todo.",
+          56:  "Que tema más entretenido con mis hijos, nuestras viejas nos perdonarán que las engañamos",
+          117: "Papá cuánta falta me haces. Hoy vives en el cielo pero también en mi corazón, te extraño mucho papá. Gracias por tus lindos consejos que me diste, gracias por el amor que me entregaste, gracias por ser mi amigo. Gracias por el tiempo que me dedicaste, no te imaginas cuánto te extraño de escuchar tu voz, ver tu mirada, sentir tu sonrisa. No sabes cuánto te extraño de tenerte a mi lado. La única manera de verte es viendo tus fotos, pero mis ojos se llenan de lágrimas. Pero sé que tú quieres que siga adelante, mi bello ángel, sé que me das la fuerza para seguir adelante. Te quiero mucho, te recordaré por siempre, sé que algún día nos volveremos a ver y estaremos juntos otra vez. Te amo, te quiero más allá de las estrellas. PAPÁ.",
+          154: "Te amo hasta el infinito y más allá, me haces mucha falta Papá, gracias por tanto y por todo.",
         },
         0 // musicSection 0 = canciones del abuelo
       ),
@@ -321,12 +340,19 @@ export const albums: Album[] = [
       // Esta pantalla aparece automáticamente al terminar las fotos
       // del abuelo, antes de comenzar las fotos de la abuela.
       // Puedes cambiar el texto directamente aquí abajo.
-      // ════════════════════════════════════════════════════════
+      // ═══════════════���════════════════════════════════════════
       {
         type: "dedicatoria",
         text: "Ahora que nuestro padre no está con nosotros,\nusted es nuestro madre y padre,\nen el cual nosotros la queremos\ny amamos todos los días.",
       },
- ...makePhotos(
+
+      // ════════════════════════════════════════════════════════
+      // FOTOS DE LA ABUELA
+      // musicSection: 1 → usa la música de musicSections[1]
+      // Para agregar más fotos, agrega la ruta al array de abajo.
+      // Para agregar captions, usa el índice (0 = primera foto de este bloque).
+      // ════════════════════════════════════════════════════════
+      ...makePhotos(
         [
           "/albums/vacaciones/abuela/foto1.jpeg",
           "/albums/vacaciones/abuela/foto2.jpeg",
@@ -340,7 +366,6 @@ export const albums: Album[] = [
           "/albums/vacaciones/abuela/foto11.jpeg",
           "/albums/vacaciones/abuela/foto12.jpeg",
           "/albums/vacaciones/abuela/foto13.jpeg",
-
           "/albums/vacaciones/abuela/foto15.jpeg",
           "/albums/vacaciones/abuela/foto16.jpeg",
           "/albums/vacaciones/abuela/foto17.jpeg",
@@ -377,7 +402,7 @@ export const albums: Album[] = [
           "/albums/vacaciones/abuela/foto48.jpeg",
           "/albums/vacaciones/abuela/foto49.jpeg",
           "/albums/vacaciones/abuela/foto50.jpeg",
-           "/albums/vacaciones/abuela/foto51.jpeg",
+          "/albums/vacaciones/abuela/foto51.jpeg",
           "/albums/vacaciones/abuela/foto52.jpeg",
           "/albums/vacaciones/abuela/foto53.jpeg",
           "/albums/vacaciones/abuela/foto54.jpeg",
@@ -393,46 +418,13 @@ export const albums: Album[] = [
           "/albums/vacaciones/abuela/foto64.jpeg",
         ],
         {
-          // ── Captions del abuelo ───────────────────────────────
-          // Índice 0 = primera foto, 1 = segunda, etc.
-          // Si no pones caption, la foto aparece sin cuadro de descripción.
+          // ── Captions de la abuela ─────────────────────────────
+          // Índice 0 = primera foto de este bloque.
           // Para agregar más, copia el formato: 5: "Tu mensaje aquí",
-          0:   "Te doy las gracias por todo me siento orgulloso de ti mamá me siento feliz por tenerte y tener una madre hermosa luchadora comprensiva , cariñosa y gracias por tus consejos tan sabio han sido importante para mí en mi vida agradecido de ti Tu sabes cuanto te amo mamita,Gracias por compartir lindo momento conmigo doy gracias adiós por tenerte a mi lado mamita gracias gracias ❤️",
+          0: "Te doy las gracias por todo, me siento orgulloso de ti mamá. Me siento feliz por tenerte y tener una madre hermosa, luchadora, comprensiva y cariñosa. Gracias por tus consejos tan sabios, han sido importantes para mí en mi vida. Agradecido de ti. Tú sabes cuánto te amo mamita. Gracias por compartir lindos momentos conmigo, doy gracias a Dios por tenerte a mi lado. Gracias, gracias.",
         },
-        0 // musicSection 0 = canciones del abuelo
+        1 // ← musicSection 1 = canciones de la abuela (musicSections[1])
       ),
-
-      // ════════════════════════════════════════════════════════
-      // FOTOS DE LA ABUELA — agrega aquí tus fotos
-      //
-      // Instrucciones:
-      //   1. Coloca los archivos de foto en: /public/albums/abuela/
-      //   2. Agrega las rutas en el array de abajo, una por línea
-      //   3. Ejemplo de ruta: "/albums/abuela/foto1.jpeg"
-      //   4. Para agregar captions, usa el mismo formato que el abuelo
-      //      (el índice empieza en 0 dentro de este bloque)
-      //
-      // Ejemplo de cómo se vería con fotos reales:
-      //   ...makePhotos([
-      //     "/albums/abuela/foto1.jpeg",
-      //     "/albums/abuela/foto2.jpeg",
-      //     "/albums/abuela/foto 3.jpeg",
-      //   ], {
-      //     0: "Abuela en el jardín, una tarde de verano",
-      //     2: "El día de su cumpleaños con toda la familia",
-      //   }, 1),
-      // ════════════════════════════════════════════════════════
-      // DESCOMENTA Y EDITA ESTE BLOQUE CUANDO TENGAS LAS FOTOS:
-      // ...makePhotos(
-      //   [
-      //     "/albums/abuela/foto1.jpeg",
-      //     "/albums/abuela/foto2.jpeg",
-      //   ],
-      //   {
-      //     0: "Descripción de la primera foto de la abuela",
-      //   },
-      //   1 // musicSection 1 = canciones de la abuela
-      // ),
     ],
   },
 

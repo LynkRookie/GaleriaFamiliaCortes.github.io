@@ -154,6 +154,7 @@ export default function AlbumViewer({ album }: AlbumViewerProps) {
           onNext={handleNext}
           onJumpTo={handleJumpTo}
           musicSections={album.musicSections}
+          introSong={album.introSong}
         />
       )}
 

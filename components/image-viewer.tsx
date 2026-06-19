@@ -14,6 +14,8 @@ interface ImageViewerProps {
   onJumpTo?: (index: number) => void
   // musicSections[0] = canciones sección abuelo, musicSections[1] = abuela, etc.
   musicSections?: string[][]
+  // Canción especial que suena solo en la primera foto (isIntro). Se difumina al terminar.
+  introSong?: string
 }
 
 // Total time each slide is shown (ms)
@@ -40,6 +42,7 @@ export default function ImageViewer({
   onNext,
   onJumpTo,
   musicSections,
+  introSong,
 }: ImageViewerProps) {
   const total = photos.length
 
@@ -252,20 +255,77 @@ export default function ImageViewer({
     playTrack(section, 0)
   }, [currentIndex, isSlideshow, musicSections, photos, playTrack])
 
+  // ── Intro song fade-out helper ──
+  const introFadeRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const fadeOutAndStop = useCallback((audio: HTMLAudioElement, durationMs = 3000) => {
+    if (introFadeRef.current) clearInterval(introFadeRef.current)
+    const startVol = audio.volume
+    const steps = 40
+    const stepTime = durationMs / steps
+    const diff = startVol / steps
+    let count = 0
+    introFadeRef.current = setInterval(() => {
+      count++
+      audio.volume = Math.max(0, audio.volume - diff)
+      if (count >= steps) {
+        clearInterval(introFadeRef.current!)
+        introFadeRef.current = null
+        audio.pause()
+        audio.volume = 0.7 // reset for next use
+      }
+    }, stepTime)
+  }, [])
+
   // Play / pause with the slideshow
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
     if (isSlideshow && musicSections) {
-      // Find the section of the current slide
       const slide = photos[currentIndex]
-      const section =
-        isPhoto(slide) && slide.musicSection !== undefined ? slide.musicSection : 0
-      currentSectionRef.current = section
-      playTrack(section, 0)
+      const isIntroSlide = isPhoto(slide) && (slide as Extract<Photo, { src: string }>).isIntro
+
+      if (isIntroSlide && introSong) {
+        // Play the intro song — fade it out when it ends, then start normal playlist
+        audio.src = introSong
+        audio.volume = 0.7
+        audio.currentTime = 0
+        audio.play().catch(() => {})
+
+        const handleIntroEnded = () => {
+          fadeOutAndStop(audio, 3000)
+          // After fade, start the normal abuelo playlist
+          setTimeout(() => {
+            currentSectionRef.current = 0
+            playTrack(0, 0)
+          }, 3200)
+        }
+        audio.addEventListener("ended", handleIntroEnded, { once: true })
+
+        // Also cap at 35s max — fade out before it ends naturally if needed
+        const cap = setTimeout(() => {
+          fadeOutAndStop(audio, 3000)
+          setTimeout(() => {
+            currentSectionRef.current = 0
+            playTrack(0, 0)
+          }, 3200)
+        }, 35_000)
+
+        return () => {
+          clearTimeout(cap)
+          audio.removeEventListener("ended", handleIntroEnded)
+        }
+      } else {
+        // Normal section logic
+        const section =
+          isPhoto(slide) && slide.musicSection !== undefined ? slide.musicSection : 0
+        currentSectionRef.current = section
+        playTrack(section, 0)
+      }
     } else {
       audio.pause()
       if (musicGapTimerRef.current) clearTimeout(musicGapTimerRef.current)
+      if (introFadeRef.current) clearInterval(introFadeRef.current)
       currentSectionRef.current = -1
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -362,8 +422,15 @@ export default function ImageViewer({
       return
     }
     const slide = photos[currentIndex]
-    const text = isPhoto(slide)
-      ? (slide.caption ?? "")
+
+    // Si es la foto intro, primero dice "Feliz Día Papá" y luego el caption
+    const isIntroSlide = isPhoto(slide) && (slide as Extract<Photo, { src: string }>).isIntro
+    const captionText = isPhoto(slide) ? (slide.caption ?? "") : ""
+
+    const text = isIntroSlide
+      ? `Feliz Día Papá. ${captionText}`.trim()
+      : isPhoto(slide)
+      ? captionText
       : isDedicatoria(slide)
       ? (slide as Extract<Photo, { type: "dedicatoria" }>).text
       : ""
@@ -597,7 +664,7 @@ export default function ImageViewer({
                 src={photoA.src}
                 alt={photoA.alt}
                 fill
-                className="object-contain"
+                className="object-cover"
                 sizes="100vw"
                 priority
               />
@@ -618,7 +685,7 @@ export default function ImageViewer({
                 src={photoB.src}
                 alt={photoB.alt}
                 fill
-                className="object-contain"
+                className="object-cover"
                 sizes="100vw"
                 priority
               />
