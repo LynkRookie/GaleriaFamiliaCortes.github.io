@@ -352,8 +352,10 @@ export const albums: Album[] = [
           // Índice 0 aquí = foto2 (la foto1 ya está separada arriba con isIntro).
           // Para agregar más, copia el formato: 5: "Tu mensaje aquí",
           56:  "Que tema más entretenido con mis hijos, nuestras viejas nos perdonarán que las engañamos",
-          117: "Papá cuánta falta me haces. Hoy vives en el cielo pero también en mi corazón, te extraño mucho papá. Gracias por tus lindos consejos que me diste, gracias por el amor que me entregaste, gracias por ser mi amigo. Gracias por el tiempo que me dedicaste, no te imaginas cuánto te extraño de escuchar tu voz, ver tu mirada, sentir tu sonrisa. No sabes cuánto te extraño de tenerte a mi lado. La única manera de verte es viendo tus fotos, pero mis ojos se llenan de lágrimas. Pero sé que tú quieres que siga adelante, mi bello ángel, sé que me das la fuerza para seguir adelante. Te quiero mucho, te recordaré por siempre, sé que algún día nos volveremos a ver y estaremos juntos otra vez. Te amo, te quiero más allá de las estrellas. PAPÁ.",
+          117: "Papá, tu ausencia duele cada día, pero tu amor, tus enseñanzas y tu recuerdo siguen iluminando mi vida desde el cielo.\nTe extraño con toda mi alma y te amaré por siempre, esperando el día en que podamos abrazarnos nuevamente y estar juntos otra vez.",
           154: "Te amo hasta el infinito y más allá, me haces mucha falta Papá, gracias por tanto y por todo.",
+          216: "Pronto volveremos a estar juntos, mi vieja hermosa. Yo estoy bien; cuida y aconseja a nuestros hijos, y entrega todo tu cariño a nuestros nietos y bisnietos, porque desde aquí también los acompaño y los cuido cada día. A todos los amo con toda mi alma, y a ti, mi vieja querida, te amo más de lo que las palabras pueden expresar.",
+
         },
         0 // musicSection 0 = canciones del abuelo
       ),
@@ -444,7 +446,7 @@ export const albums: Album[] = [
           // ── Captions de la abuela ─────────────────────────────
           // Índice 0 = primera foto de este bloque.
           // Para agregar más, copia el formato: 5: "Tu mensaje aquí",
-          0: "Te doy las gracias por todo, me siento orgulloso de ti mamá. Me siento feliz por tenerte y tener una madre hermosa, luchadora, comprensiva y cariñosa. Gracias por tus consejos tan sabios, han sido importantes para mí en mi vida. Agradecido de ti. Tú sabes cuánto te amo mamita. Gracias por compartir lindos momentos conmigo, doy gracias a Dios por tenerte a mi lado. Gracias, gracias.",
+          0: "Mamá, gracias por tu amor, tu fortaleza y tus sabios consejos; me siento orgulloso y agradecido de tener una madre tan hermosa, luchadora y cariñosa como tú.\nTe amo con todo mi corazón y doy gracias a Dios por cada momento a tu lado, porque eres uno de los mayores regalos de mi vida.",
         },
         1 // ← musicSection 1 = canciones de la abuela (musicSections[1])
       ),
