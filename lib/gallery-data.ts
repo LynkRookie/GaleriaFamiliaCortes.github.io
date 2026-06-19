@@ -89,7 +89,7 @@ export const albums: Album[] = [
     // Máximo ~35 segundos. Se difumina sola al terminar y luego
     // comienza la playlist normal del abuelo (musicSections[0]).
     // Pon aquí la ruta de tu archivo MP3 cuando lo tengas:
-    introSong: "/albums/vacaciones/intro.mp3",
+    introSong: "/albums/vacaciones/Vicente Fernández - El Hombre Que Más Te Amó - Cover Audio.mp3",
 
     // ── Música por sección ────────────────────────────────────
     // musicSections[0] → suena durante las fotos del ABUELO (desde foto 2 en adelante)

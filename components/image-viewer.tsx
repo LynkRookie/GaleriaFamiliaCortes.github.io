@@ -664,7 +664,7 @@ export default function ImageViewer({
                 src={photoA.src}
                 alt={photoA.alt}
                 fill
-                className="object-cover"
+                className="object-contain"
                 sizes="100vw"
                 priority
               />
@@ -685,7 +685,7 @@ export default function ImageViewer({
                 src={photoB.src}
                 alt={photoB.alt}
                 fill
-                className="object-cover"
+                className="object-contain"
                 sizes="100vw"
                 priority
               />
