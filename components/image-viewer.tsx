@@ -25,9 +25,11 @@ const SLIDESHOW_DURATION = 15_000
 const FADE_DURATION = 1_800
 // Time the dedicatoria screen stays visible (ms)
 const DEDICATORIA_DURATION = 20_000
-// Minimum time the intro slide stays visible (ms) — at least 60s
-const INTRO_MIN_DURATION = 60_000
-// Maximum time the intro slide stays visible (ms) — at most 3 min
+// How long each of the first N photo slides stays visible (ms) — 60s
+const INTRO_SLIDE_DURATION = 60_000
+// How many slides at the start use the longer INTRO_SLIDE_DURATION
+const INTRO_SLIDE_COUNT = 5
+// Maximum time the intro song can play before fading out (ms) — 3 min
 const INTRO_MAX_DURATION = 180_000
 
 // ── Helpers para discriminar el tipo de slide ──
@@ -141,11 +143,14 @@ export default function ImageViewer({
   currentIndexRef.current = currentIndex
 
   const currentSlide = photos[currentIndex]
-  const isCurrentIntro = isPhoto(currentSlide) && (currentSlide as Extract<Photo, { src: string }>).isIntro
+
+  // Count how many real photo slides come before currentIndex (0-based)
+  const photoRank = photos.slice(0, currentIndex + 1).filter(isPhoto).length - 1
+
   const currentDuration = isDedicatoria(currentSlide)
     ? DEDICATORIA_DURATION
-    : isCurrentIntro
-    ? INTRO_MIN_DURATION
+    : photoRank < INTRO_SLIDE_COUNT
+    ? INTRO_SLIDE_DURATION
     : SLIDESHOW_DURATION
 
   useEffect(() => {
@@ -617,7 +622,7 @@ export default function ImageViewer({
       {/* ── Main area ── */}
       <div className="relative flex flex-1 items-center justify-center overflow-hidden min-h-0">
 
-        {/* ���══════════════════════════════════════════════════════
+        {/* ����══════════════════════════════════════════════════════
             PANTALLA DE DEDICATORIA
             Aparece con fade-in cuando el slide actual es tipo "dedicatoria"
         ═══════════════════════════════════════════════════════ */}
