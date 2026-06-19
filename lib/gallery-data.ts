@@ -390,6 +390,7 @@ export const albums: Album[] = [
           "/albums/vacaciones/abuela/foto61.jpeg",
           "/albums/vacaciones/abuela/foto62.jpeg",
           "/albums/vacaciones/abuela/foto63.jpeg",
+          "/albums/vacaciones/abuela/foto64.jpeg",
         ],
         {
           // ── Captions del abuelo ───────────────────────────────
