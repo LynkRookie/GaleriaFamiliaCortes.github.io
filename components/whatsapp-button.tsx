@@ -6,7 +6,7 @@ import { X } from "lucide-react"
 const FAMILY_MEMBERS = [
   "Tata Tito",
   "Abuela Olivia",
-  "Cortés",
+  "Nevenka Cortés",
   "Wilda Cortés",
   "Emiliana Cortés",
   "Jacqueline Cortés",
