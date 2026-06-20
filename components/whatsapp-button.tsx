@@ -71,7 +71,7 @@ export default function WhatsAppButton() {
     if (!name.trim() || !requestType || !forWhom) return
     setConfirmed(true)
     const message = encodeURIComponent(
-      `Hola Damián, soy ${name.trim()}. Quiero que agregues estas ${contentLabel} ${forWhom}. Por favor dime qué necesitas.`
+      `Hola Damián, soy ${name.trim()}.Puedes agregar estas ${contentLabel} de mi ${forWhom}, haci que por favor dime qué fotos exactas necesitas para que lo agregues a la pagina.`
     )
     setTimeout(() => {
       window.open(`https://wa.me/56933471250?text=${message}`, "_blank")
