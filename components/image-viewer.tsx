@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useState, useRef } from "react"
 import Image from "next/image"
-import { X, ChevronLeft, ChevronRight, Download, Play, Pause, Maximize, Minimize, Volume2, VolumeX } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, ChevronDown, Download, Play, Pause, Maximize, Minimize, Volume2, VolumeX, Mic, MicOff } from "lucide-react"
 import type { Photo } from "@/lib/gallery-data"
 
 interface ImageViewerProps {
@@ -20,15 +20,15 @@ interface ImageViewerProps {
 
 // Total time each slide is shown (ms)
 // ← AQUI cambias la duración de cada foto en el slideshow
-const SLIDESHOW_DURATION = 12_000
+const SLIDESHOW_DURATION = 15_000
 // Duration of the cross-fade overlap (ms) — must be < SLIDESHOW_DURATION
 const FADE_DURATION = 1_800
 // Time the dedicatoria screen stays visible (ms)
 const DEDICATORIA_DURATION = 20_000
-// How long each of the first N photo slides stays visible (ms) — 60s
-const INTRO_SLIDE_DURATION = 60_000
+// How long each of the first N photo slides stays visible (ms) — 35s
+const INTRO_SLIDE_DURATION = 35_000
 // How many slides at the start use the longer INTRO_SLIDE_DURATION
-const INTRO_SLIDE_COUNT = 5
+const INTRO_SLIDE_COUNT = 4
 // Maximum time the intro song can play before fading out (ms) — 3 min
 const INTRO_MAX_DURATION = 180_000
 
@@ -185,6 +185,7 @@ export default function ImageViewer({
   // Fullscreen
   // ─────────────────────────────────────────────
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [thumbsVisible, setThumbsVisible] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
 
   const toggleFullscreen = useCallback(() => {
@@ -206,6 +207,20 @@ export default function ImageViewer({
   // ─────────────────────────────────────────────
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const musicGapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // ─────────────────────────────────────────────
+  // Volume control (shared state so the slider reflects current volume)
+  // ─────────────────────────────────────────────
+  const [volume, setVolume] = useState(0.7)
+  const volumeRef = useRef(0.7)
+
+  const applyVolume = useCallback((v: number) => {
+    const clamped = Math.max(0, Math.min(1, v))
+    volumeRef.current = clamped
+    setVolume(clamped)
+    if (audioRef.current) audioRef.current.volume = clamped
+  }, [])
+
   const trackIndexRef = useRef(0)
   const currentSectionRef = useRef(-1)
 
@@ -225,7 +240,7 @@ export default function ImageViewer({
   // Create the audio element once
   useEffect(() => {
     const audio = new Audio()
-    audio.volume = 0.7
+    audio.volume = volumeRef.current
     audio.loop = false
     audioRef.current = audio
 
@@ -284,7 +299,7 @@ export default function ImageViewer({
         clearInterval(introFadeRef.current!)
         introFadeRef.current = null
         audio.pause()
-        audio.volume = 0.7 // reset for next use
+        audio.volume = volumeRef.current // reset to current user-chosen volume
       }
     }, stepTime)
   }, [])
@@ -300,7 +315,7 @@ export default function ImageViewer({
       if (isIntroSlide && introSong) {
         // Play the intro song — fade it out when it ends, then start normal playlist
         audio.src = introSong
-        audio.volume = 0.7
+        audio.volume = volumeRef.current
         audio.currentTime = 0
         audio.play().catch(() => {})
 
@@ -403,10 +418,10 @@ export default function ImageViewer({
         if (preferred) utter.voice = preferred
 
         utter.onstart = () => {
-          fadeVolume(audioRef.current?.volume ?? 0.7, 0.12, 1200)
+          fadeVolume(audioRef.current?.volume ?? volumeRef.current, 0.12, 1200)
         }
         utter.onend = () => {
-          fadeVolume(audioRef.current?.volume ?? 0.12, 0.7, 1500)
+          fadeVolume(audioRef.current?.volume ?? 0.12, volumeRef.current, 1500)
         }
 
         ttsRef.current = utter
@@ -572,18 +587,52 @@ export default function ImageViewer({
             {isSlideshow ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </button>
 
-          {/* TTS toggle — activar/desactivar la voz */}
+          {/* Volume control — icon click to mute, vertical slider appears below on hover */}
+          <div className="group relative flex flex-col items-center">
+            {/* Volume icon button */}
+            <button
+              onClick={() => applyVolume(volume > 0 ? 0 : 0.7)}
+              aria-label={volume === 0 ? "Activar volumen" : "Silenciar"}
+              title={`Volumen: ${Math.round(volume * 100)}% — Pasa el cursor para ajustar`}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+            >
+              {volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </button>
+            {/* Transparent bridge + panel — no gap so hover stays active when moving mouse down */}
+            <div className="absolute top-full hidden group-hover:flex flex-col items-center w-full pt-1 z-30">
+              <div className="flex flex-col items-center gap-1 rounded-xl bg-black/80 backdrop-blur-sm border border-white/10 px-3 py-3 shadow-xl">
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={volume}
+                  onChange={(e) => applyVolume(Number(e.target.value))}
+                  aria-label="Ajustar volumen"
+                  className="h-24 cursor-pointer appearance-none bg-transparent"
+                  style={{
+                    writingMode: "vertical-lr",
+                    direction: "rtl",
+                    WebkitAppearance: "slider-vertical",
+                  }}
+                />
+                <span className="text-[10px] text-white/40 tabular-nums">{Math.round(volume * 100)}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mic toggle — activar/desactivar descripción por voz */}
           <button
             onClick={() => setTtsEnabled((v) => !v)}
-            aria-label={ttsEnabled ? "Desactivar voz" : "Activar voz"}
-            title={ttsEnabled ? "Desactivar voz (leerá las descripciones)" : "Activar voz"}
+            aria-label={ttsEnabled ? "Desactivar descripción por voz" : "Activar descripción por voz"}
+            title={ttsEnabled ? "Desactivar descripción por voz" : "Activar descripción por voz"}
             className={`flex h-9 w-9 items-center justify-center rounded-full transition ${
               ttsEnabled
                 ? "bg-white/10 text-white hover:bg-white/20"
                 : "bg-white/5 text-white/30 hover:bg-white/10"
             }`}
           >
-            {ttsEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            {ttsEnabled ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
           </button>
 
           {/* Fullscreen */}
@@ -728,11 +777,31 @@ export default function ImageViewer({
         )}
       </div>
 
-      {/* ── Thumbnail strip (skip dedicatoria slides) ── */}
-      <div className="shrink-0 px-4 pb-5 pt-3">
+      {/* ── Thumbnail strip toggle + strip ── */}
+      <div className="shrink-0">
+        {/* Toggle arrow — always visible, centered */}
+        <div className="flex justify-center py-1">
+          <button
+            onClick={() => setThumbsVisible((v) => !v)}
+            aria-label={thumbsVisible ? "Ocultar miniaturas" : "Mostrar miniaturas"}
+            title={thumbsVisible ? "Ocultar miniaturas" : "Mostrar miniaturas"}
+            className="flex h-6 w-10 items-center justify-center rounded-full bg-white/10 text-white/60 transition hover:bg-white/20 hover:text-white"
+          >
+            <ChevronDown
+              className={`h-4 w-4 transition-transform duration-300 ${thumbsVisible ? "" : "rotate-180"}`}
+            />
+          </button>
+        </div>
+
+        {/* Thumbnail strip — collapses smoothly */}
+        <div
+          className={`overflow-hidden transition-all duration-300 ${
+            thumbsVisible ? "max-h-28 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
         <div
           ref={thumbsRef}
-          className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-2 overflow-x-auto px-4 pb-5 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {photos.map((p, i) => {
             if (isDedicatoria(p)) {
@@ -772,6 +841,7 @@ export default function ImageViewer({
             )
           })}
         </div>
+        </div>{/* end collapse wrapper */}
       </div>
     </div>
   )
