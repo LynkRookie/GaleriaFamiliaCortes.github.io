@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import { getAlbumById, albums } from "@/lib/gallery-data"
 import AlbumViewer from "@/components/album-viewer"
+import WhatsAppButton from "@/components/whatsapp-button"
 
 interface Props {
   params: Promise<{ id: string }>
@@ -35,5 +36,10 @@ export default async function AlbumPage({ params }: Props) {
 
   if (!album) notFound()
 
-  return <AlbumViewer album={album} />
+  return (
+    <>
+      <AlbumViewer album={album} />
+      <WhatsAppButton />
+    </>
+  )
 }

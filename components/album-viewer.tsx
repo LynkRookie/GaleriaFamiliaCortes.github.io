@@ -13,6 +13,7 @@ import {
   Images,
 } from "lucide-react"
 
+
 interface AlbumViewerProps {
   album: Album
 }
@@ -165,6 +166,7 @@ export default function AlbumViewer({ album }: AlbumViewerProps) {
           onClose={() => setShowShare(false)}
         />
       )}
+
     </>
   )
 }
