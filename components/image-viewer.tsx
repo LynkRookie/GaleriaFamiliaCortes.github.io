@@ -2,7 +2,7 @@
 
 import { useEffect, useCallback, useState, useRef } from "react"
 import Image from "next/image"
-import { X, ChevronLeft, ChevronRight, ChevronDown, Download, Play, Pause, Maximize, Minimize, Volume2, VolumeX, Mic, MicOff } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, ChevronDown, Download, Play, Pause, Maximize, Minimize, Volume2, VolumeX, Mic, MicOff, PlayCircle } from "lucide-react"
 import type { Photo } from "@/lib/gallery-data"
 
 interface ImageViewerProps {
@@ -33,8 +33,14 @@ const INTRO_SLIDE_COUNT = 4
 const INTRO_MAX_DURATION = 180_000
 
 // ── Helpers para discriminar el tipo de slide ──
-function isPhoto(p: Photo): p is Extract<Photo, { src: string }> {
+function isPhoto(p: Photo): p is Extract<Photo, { type?: "photo"; src: string }> {
   return !p.type || p.type === "photo"
+}
+function isVideo(p: Photo): p is Extract<Photo, { type: "video"; src: string }> {
+  return p.type === "video"
+}
+function hasMedia(p: Photo): p is Extract<Photo, { src: string }> {
+  return isPhoto(p) || isVideo(p)
 }
 function isDedicatoria(p: Photo): p is Extract<Photo, { type: "dedicatoria" }> {
   return p.type === "dedicatoria"
@@ -480,20 +486,20 @@ export default function ImageViewer({
   // ─────────────────────────────────────────────
   const handleDownload = useCallback(async () => {
     const slide = photos[currentIndex]
-    if (!isPhoto(slide)) return
+    if (!hasMedia(slide)) return
     try {
       const response = await fetch(slide.src)
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = slide.src.split("/").pop() || `foto-${currentIndex + 1}.jpg`
+      a.download = slide.src.split("/").pop() || `media-${currentIndex + 1}`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
     } catch {
-      if (isPhoto(slide)) window.open(slide.src, "_blank")
+      if (hasMedia(slide)) window.open(slide.src, "_blank")
     }
   }, [photos, currentIndex])
 
@@ -540,12 +546,12 @@ export default function ImageViewer({
     }
   }, [])
 
-  // Resolve caption for the current photo slide
-  const caption = isPhoto(currentSlide) ? (currentSlide.caption ?? "") : ""
+  // Resolve caption for the current photo or video slide
+  const caption = hasMedia(currentSlide) ? ((currentSlide as Extract<Photo, { src: string }>).caption ?? "") : ""
 
-  // Safe photo to show in each layer
-  const photoA = isPhoto(photos[layerA]) ? (photos[layerA] as Extract<Photo, { src: string }>) : null
-  const photoB = isPhoto(photos[layerB]) ? (photos[layerB] as Extract<Photo, { src: string }>) : null
+  // Safe media (photo or video) to show in each layer
+  const photoA = hasMedia(photos[layerA]) ? (photos[layerA] as Extract<Photo, { src: string }>) : null
+  const photoB = hasMedia(photos[layerB]) ? (photos[layerB] as Extract<Photo, { src: string }>) : null
 
   return (
     <div
@@ -645,8 +651,8 @@ export default function ImageViewer({
             {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
           </button>
 
-          {/* Download — only shown for photo slides */}
-          {isPhoto(currentSlide) && (
+          {/* Download — shown for photo and video slides */}
+          {hasMedia(currentSlide) && (
             <button
               onClick={handleDownload}
               aria-label="Descargar imagen"
@@ -714,42 +720,64 @@ export default function ImageViewer({
           {/* Layer A */}
           {photoA && (
             <div
-              className="absolute inset-0"
+              className="absolute inset-0 flex items-center justify-center"
               style={{
                 opacity: topLayer === "A" ? 1 : 0,
                 transition: `opacity ${FADE_DURATION}ms ease-in-out`,
                 zIndex: topLayer === "A" ? 2 : 1,
               }}
             >
-              <Image
-                src={photoA.src}
-                alt={photoA.alt}
-                fill
-                className="object-contain"
-                sizes="100vw"
-                priority
-              />
+              {isVideo(photos[layerA]) ? (
+                <video
+                  key={photoA.src}
+                  src={photoA.src}
+                  controls
+                  autoPlay={topLayer === "A"}
+                  className="max-h-full max-w-full object-contain"
+                  aria-label={photoA.alt}
+                />
+              ) : (
+                <Image
+                  src={photoA.src}
+                  alt={photoA.alt}
+                  fill
+                  className="object-contain"
+                  sizes="100vw"
+                  priority
+                />
+              )}
             </div>
           )}
 
           {/* Layer B */}
           {photoB && (
             <div
-              className="absolute inset-0"
+              className="absolute inset-0 flex items-center justify-center"
               style={{
                 opacity: topLayer === "B" ? 1 : 0,
                 transition: `opacity ${FADE_DURATION}ms ease-in-out`,
                 zIndex: topLayer === "B" ? 2 : 1,
               }}
             >
-              <Image
-                src={photoB.src}
-                alt={photoB.alt}
-                fill
-                className="object-contain"
-                sizes="100vw"
-                priority
-              />
+              {isVideo(photos[layerB]) ? (
+                <video
+                  key={photoB.src}
+                  src={photoB.src}
+                  controls
+                  autoPlay={topLayer === "B"}
+                  className="max-h-full max-w-full object-contain"
+                  aria-label={photoB.alt}
+                />
+              ) : (
+                <Image
+                  src={photoB.src}
+                  alt={photoB.alt}
+                  fill
+                  className="object-contain"
+                  sizes="100vw"
+                  priority
+                />
+              )}
             </div>
           )}
         </div>
@@ -824,19 +852,27 @@ export default function ImageViewer({
               )
             }
 
-            const photo = p as Extract<Photo, { src: string }>
+            const media = p as Extract<Photo, { src: string }>
+            const isVideoSlide = isVideo(p)
             return (
               <button
-                key={photo.src}
+                key={media.src}
                 onClick={() => { stopSlideshow(); onJumpTo?.(i) }}
-                aria-label={`Ir a imagen ${i + 1}`}
+                aria-label={isVideoSlide ? `Ir al video ${i + 1}` : `Ir a imagen ${i + 1}`}
                 className={`relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                   i === currentIndex
                     ? "border-primary opacity-100 scale-105"
                     : "border-transparent opacity-40 hover:opacity-70"
                 }`}
               >
-                <Image src={photo.src} alt={photo.alt} fill className="object-cover" sizes="56px" />
+                {isVideoSlide ? (
+                  /* Video thumbnail — dark background with play icon */
+                  <div className="flex h-full w-full items-center justify-center bg-white/10">
+                    <PlayCircle className="h-6 w-6 text-white/80" />
+                  </div>
+                ) : (
+                  <Image src={media.src} alt={media.alt} fill className="object-cover" sizes="56px" />
+                )}
               </button>
             )
           })}

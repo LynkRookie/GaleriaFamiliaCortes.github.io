@@ -14,18 +14,30 @@
 //   4. Ejemplo de ruta: "/albums/abuela/foto1.jpeg"
 // ============================================================
 
-// Un "slide" puede ser una foto normal o una pantalla de dedicatoria
+// Un "slide" puede ser una foto, un video o una pantalla de dedicatoria
 export type Photo =
   | {
       type?: "photo" // opcional, por compatibilidad
       src: string
       alt: string
       caption?: string
+      // Número visible que se muestra en el contador (Foto 1, Foto 2…)
+      // Se asigna automáticamente por makePhotos/makeVideos; no hace falta escribirlo a mano.
+      displayIndex?: number
       // Índice musical: qué lista de música usar durante este slide
       // 0 = musicSections[0] (abuelo), 1 = musicSections[1] (abuela), etc.
       musicSection?: number
       // true = esta es la primera foto y debe sonar la introSong del álbum
       isIntro?: boolean
+    }
+  | {
+      type: "video"
+      src: string          // ruta del archivo de video (mp4, webm…)
+      alt: string
+      caption?: string
+      // Número visible que se muestra en el contador
+      displayIndex?: number
+      musicSection?: number
     }
   | {
       type: "dedicatoria"
@@ -54,22 +66,45 @@ export interface Album {
 }
 
 // ──────────────────────────────────────────────────────────────
-// Helper: convierte una lista de rutas en Photo[]
-// El caption y alt se generan como "Foto 1", "Foto 2", etc.
-// Si quieres un caption personalizado, pásalo en el objeto
-// captions con el índice correspondiente (basado en 0).
-// El parámetro musicSection indica qué lista musical usar (0 = abuelo, 1 = abuela)
+// Helper: convierte una lista de rutas de FOTOS en Photo[]
+// displayIndex se asigna automáticamente como (startAt + i + 1).
+// startAt: número desde el que empieza el conteo (útil para bloques
+//          que siguen a otros, ej. fotos de la abuela continúan desde
+//          donde se quedaron las del abuelo).
 // ──────────────────────────────────────────────────────────────
 function makePhotos(
   srcs: string[],
   captions: Record<number, string> = {},
-  musicSection: number = 0
+  musicSection: number = 0,
+  startAt: number = 0
 ): Photo[] {
   return srcs.map((src, i) => ({
     type: "photo" as const,
     src,
-    alt: `Foto ${i + 1}`,
+    alt: `Foto ${startAt + i + 1}`,
     caption: captions[i] ?? "",
+    displayIndex: startAt + i + 1,
+    musicSection,
+  }))
+}
+
+// ──────────────────────────────────────────────────────────────
+// Helper: convierte una lista de rutas de VIDEOS en Photo[]
+// Los videos se muestran con un reproductor nativo en el visor.
+// startAt: igual que en makePhotos, para continuar la numeración.
+// ──────────────────────────────────────────────────────────────
+function makeVideos(
+  srcs: string[],
+  captions: Record<number, string> = {},
+  musicSection: number = 0,
+  startAt: number = 0
+): Photo[] {
+  return srcs.map((src, i) => ({
+    type: "video" as const,
+    src,
+    alt: `Video ${startAt + i + 1}`,
+    caption: captions[i] ?? "",
+    displayIndex: startAt + i + 1,
     musicSection,
   }))
 }
@@ -89,7 +124,7 @@ export const albums: Album[] = [
     // Máximo ~35 segundos. Se difumina sola al terminar y luego
     // comienza la playlist normal del abuelo (musicSections[0]).
     // Pon aquí la ruta de tu archivo MP3 cuando lo tengas:
-    introSong: "/albums/vacaciones/Vicente Fernández - El Hombre Que Más Te Amó - Cover Audio.mp3",
+    introSong: "/albums/vacaciones/intro.mp3",
 
     // ── Música por sección ────────────────────────────────────
     // musicSections[0] → suena durante las fotos del ABUELO (desde foto 2 en adelante)
@@ -99,7 +134,8 @@ export const albums: Album[] = [
     musicSections: [
       // Sección 0 — Canciones para el abuelo
       [
-        "/albums/vacaciones/Piero - Mi viejo (Letra) Viejo, mi querido viejo.mp3","/albums/vacaciones/Gervasio - Con Una Pala y Un Sombrero.mp3","/albums/vacaciones/Richard Clayderman - Ballade Pour Adeline (from A Night In Budapest).mp3", "/albums/vacaciones/Vicente Fernández - El Hombre Que Más Te Amó - Cover Audio.mp3"
+        "/albums/vacaciones/Piero - Mi viejo (Letra) Viejo, mi querido viejo.mp3",
+        "/albums/vacaciones/Lyrics).mp3",
         // Agrega más canciones del abuelo aquí:
         // "/albums/vacaciones/musica3.mp3",
       ],
@@ -123,10 +159,12 @@ export const albums: Album[] = [
         src: "/albums/vacaciones/foto1.jpg",
         alt: "Foto 1",
         caption: "El comienzo de un viaje lleno de momentos inolvidables junto a la familia",
+        displayIndex: 1,
         musicSection: 0,
         isIntro: true,
       },
       // ── Resto de fotos del abuelo ─────────────────────────────
+      // startAt: 1 → continúa desde Foto 2 (Foto 1 está arriba con isIntro)
       ...makePhotos(
         [
           "/albums/vacaciones/foto2.jpg",
@@ -322,31 +360,35 @@ export const albums: Album[] = [
           "/albums/vacaciones/foto195.jpeg",
           "/albums/vacaciones/foto196.jpeg",
           "/albums/vacaciones/foto197.jpeg",
-          "/albums/vacaciones/foto198.jpeg",
-          "/albums/vacaciones/foto199.jpeg",
-          "/albums/vacaciones/foto200.jpeg",
-          "/albums/vacaciones/foto201.jpeg",
-          "/albums/vacaciones/foto202.jpeg",
-          "/albums/vacaciones/foto203.jpeg",
-          "/albums/vacaciones/foto204.jpeg",
-          "/albums/vacaciones/foto205.jpeg",
-          "/albums/vacaciones/foto206.jpeg",
-          "/albums/vacaciones/foto207.jpeg",
-          "/albums/vacaciones/foto359.jpeg",
-          "/albums/vacaciones/foto369.jpeg",
-          "/albums/vacaciones/abuela1.mp4",
         ],
         {
           // ── Captions del abuelo ───────────────────────────────
           // Índice 0 aquí = foto2 (la foto1 ya está separada arriba con isIntro).
           // Para agregar más, copia el formato: 5: "Tu mensaje aquí",
           56:  "Que tema más entretenido con mis hijos, nuestras viejas nos perdonarán que las engañamos",
-          118: "Papá, tu ausencia duele cada día, pero tu amor, tus enseñanzas y tu recuerdo siguen iluminando mi vida desde el cielo.\nTe extraño con toda mi alma y te amaré por siempre, esperando el día en que podamos abrazarnos nuevamente y estar juntos otra vez.",
-          153: "Te amo hasta el infinito y más allá, me haces mucha falta Papá, gracias por tanto y por todo.",
-          215: "Pronto volveremos a estar juntos, mi vieja hermosa. Yo estoy bien; cuida y aconseja a nuestros hijos, y entrega todo tu cariño a nuestros nietos y bisnietos, porque desde aquí también los acompaño y los cuido cada día. A todos los amo con toda mi alma, y a ti, mi vieja querida, te amo más de lo que las palabras pueden expresar.",
-
+          117: "Papá cuánta falta me haces. Hoy vives en el cielo pero también en mi corazón, te extraño mucho papá. Gracias por tus lindos consejos que me diste, gracias por el amor que me entregaste, gracias por ser mi amigo. Gracias por el tiempo que me dedicaste, no te imaginas cuánto te extraño de escuchar tu voz, ver tu mirada, sentir tu sonrisa. No sabes cuánto te extraño de tenerte a mi lado. La única manera de verte es viendo tus fotos, pero mis ojos se llenan de lágrimas. Pero sé que tú quieres que siga adelante, mi bello ángel, sé que me das la fuerza para seguir adelante. Te quiero mucho, te recordaré por siempre, sé que algún día nos volveremos a ver y estaremos juntos otra vez. Te amo, te quiero más allá de las estrellas. PAPÁ.",
+          154: "Te amo hasta el infinito y más allá, me haces mucha falta Papá, gracias por tanto y por todo.",
         },
-        0 // musicSection 0 = canciones del abuelo
+        0, // musicSection 0 = canciones del abuelo
+        1  // startAt: 1 → Foto 2, Foto 3… (Foto 1 está arriba con isIntro)
+      ),
+
+      // ── Videos del abuelo ────────────────────────────────────
+      // Agrega aquí los archivos .mp4 o .webm del abuelo.
+      // Se mostrarán como reproductor de video en el visor.
+      // startAt: 198 → continúa la numeración desde las 197 fotos del abuelo + la intro.
+      // (Ajusta el número si tienes más o menos fotos arriba.)
+      ...makeVideos(
+        [
+          "/albums/vacaciones/abuela1.mp4",
+          // Agrega más videos del abuelo aquí:
+          // "/albums/vacaciones/video2.mp4",
+        ],
+        {
+          // 0: "Descripción del primer video",
+        },
+        0,   // musicSection 0 = canciones del abuelo
+        198  // startAt: ajusta según cuántas fotos hay antes
       ),
 
       // ════════════════════════════════════════════════════════
@@ -357,7 +399,7 @@ export const albums: Album[] = [
       // ═══════════════���════════════════════════════════════════
       {
         type: "dedicatoria",
-        text: "Aunque nuestro padre ya no esté a nuestro lado, usted ha sabido ocupar ambos lugares con amor, sacrificio y valentía. Gracias por ser nuestra madre y también nuestro padre; la queremos y la amamos profundamente todos los días de nuestra vida.",
+        text: "Ahora que nuestro padre no está con nosotros,\nusted es nuestro madre y padre,\nen el cual nosotros la queremos\ny amamos todos los días.",
       },
 
       // ════════════════════════════════════════════════════════
@@ -435,9 +477,10 @@ export const albums: Album[] = [
           // ── Captions de la abuela ─────────────────────────────
           // Índice 0 = primera foto de este bloque.
           // Para agregar más, copia el formato: 5: "Tu mensaje aquí",
-          0: "Mamá, gracias por tu amor, tu fortaleza y tus sabios consejos; me siento orgulloso y agradecido de tener una madre tan hermosa, luchadora y cariñosa como tú.\nTe amo con todo mi corazón y doy gracias a Dios por cada momento a tu lado, porque eres uno de los mayores regalos de mi vida.",
+          0: "Te doy las gracias por todo, me siento orgulloso de ti mamá. Me siento feliz por tenerte y tener una madre hermosa, luchadora, comprensiva y cariñosa. Gracias por tus consejos tan sabios, han sido importantes para mí en mi vida. Agradecido de ti. Tú sabes cuánto te amo mamita. Gracias por compartir lindos momentos conmigo, doy gracias a Dios por tenerte a mi lado. Gracias, gracias.",
         },
-        1 // ← musicSection 1 = canciones de la abuela (musicSections[1])
+        1,   // ← musicSection 1 = canciones de la abuela (musicSections[1])
+        199  // startAt: continúa desde después de las fotos + videos del abuelo
       ),
     ],
   },
