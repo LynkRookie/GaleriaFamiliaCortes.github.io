@@ -509,32 +509,6 @@ export const albums: Album[] = [
   // ÁLBUM DE VIDEOS — Feliz Aniversario Olivia Ibacache y Héctor Cortés
   // Solo contiene videos mp4. No tiene música establecida.
   // ══════════════════════════════════════════════════════════════
-  {
-    id: "aniversario_olivia_hector",
-    title: "Feliz Aniversario Olivia Ibacache y Héctor Cortés",
-    description: "Videos especiales para celebrar su aniversario",
-    cover: "/albums/aniversario/cover.png",
-    date: "2026",
-    // Sin música establecida — álbum de solo videos
-    musicSections: [],
-    photos: makeVideos(
-      [
-         "/albums/vacaciones/abuela1.mp4",
-        // ── Agrega aquí los videos del aniversario ──────────────
-        // Copia el nombre exacto del archivo (con espacios si los tiene)
-        // y ponlo en la carpeta /public/albums/aniversario/
-        // Ejemplo:
-        // "/albums/aniversario/video1.mp4",
-        // "/albums/aniversario/video2.mp4",
-      ],
-      {
-        // Captions opcionales por índice:
-        // 0: "Descripción del primer video",
-      },
-      0, // musicSection (sin efecto al no haber música)
-      0
-    ),
-  },
 
   // ══════════════════════════════════════════════════════════════
   // ÁLBUM DE VIDEOS — Para Olivia Ibacache
@@ -550,6 +524,7 @@ export const albums: Album[] = [
     musicSections: [],
     photos: makeVideos(
       [
+         "/albums/vacaciones/abuela1.mp4",
         // ── Agrega aquí los videos de Olivia ───────────────────
         // Copia el nombre exacto del archivo y ponlo en /public/albums/olivia/
         // Ejemplo:
