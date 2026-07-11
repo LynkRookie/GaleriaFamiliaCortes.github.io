@@ -391,7 +391,7 @@ export const albums: Album[] = [
   // ══════════════════════════════════════════════════════════════
   {
     id: "Dia_De_La_Madre",
-    title: "Feliz día de la Madre, Olivia Ibacache",
+    title: "Feliz Aniversario Olivia Ibacache",
     description: "Momentos inolvidables de la maravillosa madre y abuela",
     cover: "/albums/vacaciones/abuela/foto1.jpeg",
     date: "Mayo 2026",
