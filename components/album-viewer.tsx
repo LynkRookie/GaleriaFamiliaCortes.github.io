@@ -11,6 +11,7 @@ import {
   Share2,
   CalendarDays,
   Images,
+  PlayCircle,
 } from "lucide-react"
 
 
@@ -117,25 +118,57 @@ export default function AlbumViewer({ album }: AlbumViewerProps) {
               // Dedicatoria slides are not shown in the grid
               if (photo.type === "dedicatoria") return null
               const p = photo as Extract<Photo, { src: string }>
+              const isVideoSlide = photo.type === "video"
+
               return (
                 <button
                   key={p.src}
                   onClick={() => openViewer(index)}
-                  aria-label={`Ver imagen: ${p.alt}`}
+                  aria-label={isVideoSlide ? `Ver video: ${p.alt}` : `Ver imagen: ${p.alt}`}
                   className="group relative aspect-square overflow-hidden rounded-lg bg-muted"
                 >
-                  <Image
-                    src={p.src}
-                    alt={p.alt}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.06]"
-                    sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw"
-                  />
-                  <div className="absolute inset-0 bg-black/0 transition-colors duration-200 group-hover:bg-black/30" />
-                  {p.caption && (
-                    <div className="absolute bottom-0 left-0 right-0 translate-y-full px-2 py-1 text-[10px] font-medium text-white backdrop-blur-sm bg-black/60 transition-transform duration-200 group-hover:translate-y-0 rounded-b-lg leading-tight">
-                      {p.caption}
-                    </div>
+                  {isVideoSlide ? (
+                    /* Video thumbnail: load only metadata, no autoplay, no controls */
+                    <>
+                      <video
+                        src={p.src}
+                        preload="metadata"
+                        muted
+                        playsInline
+                        className="h-full w-full object-cover"
+                        aria-hidden="true"
+                        tabIndex={-1}
+                      />
+                      {/* Dark overlay */}
+                      <div className="absolute inset-0 bg-black/40 transition-colors duration-200 group-hover:bg-black/55" />
+                      {/* Play icon */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <PlayCircle className="h-10 w-10 text-white/80 drop-shadow-lg transition-transform duration-200 group-hover:scale-110" />
+                      </div>
+                      {/* Caption on hover */}
+                      {p.caption && (
+                        <div className="absolute bottom-0 left-0 right-0 translate-y-full px-2 py-1 text-[10px] font-medium text-white backdrop-blur-sm bg-black/60 transition-transform duration-200 group-hover:translate-y-0 rounded-b-lg leading-tight">
+                          {p.caption}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    /* Photo thumbnail */
+                    <>
+                      <Image
+                        src={p.src}
+                        alt={p.alt}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                        sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, (max-width: 1024px) 20vw, 16vw"
+                      />
+                      <div className="absolute inset-0 bg-black/0 transition-colors duration-200 group-hover:bg-black/30" />
+                      {p.caption && (
+                        <div className="absolute bottom-0 left-0 right-0 translate-y-full px-2 py-1 text-[10px] font-medium text-white backdrop-blur-sm bg-black/60 transition-transform duration-200 group-hover:translate-y-0 rounded-b-lg leading-tight">
+                          {p.caption}
+                        </div>
+                      )}
+                    </>
                   )}
                 </button>
               )

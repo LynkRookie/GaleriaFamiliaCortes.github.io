@@ -139,13 +139,6 @@ export const albums: Album[] = [
         // Agrega más canciones del abuelo aquí:
         // "/albums/vacaciones/musica3.mp3",
       ],
-      // Sección 1 — Canciones para la abuela
-      // Coloca tus archivos en /public/albums/vacaciones/abuela/
-      [
-        "/albums/vacaciones/abuela/Me queda mi madre - Jay Murrieta.mp3",
-        // Agrega más canciones de la abuela aquí:
-        // "/albums/vacaciones/abuela/musica2.mp3",
-      ],
     ],
 
     photos: [
@@ -380,13 +373,136 @@ export const albums: Album[] = [
       // (Ajusta el número si tienes más o menos fotos arriba.)
       ...makeVideos(
         [
-          "/albums/vacaciones/abuela1.mp4",
-          // Agrega más videos del abuelo aquí:
-          // "/albums/vacaciones/video2.mp4",
+          // Agrega aquí los videos del abuelo:
+          // "/albums/vacaciones/video1.mp4",
         ],
         {
           // 0: "Descripción del primer video",
         },
+        0,   // musicSection 0 = canciones del abuelo
+        198  // startAt: ajusta según cuántas fotos hay antes
+      ),
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  // ÁLBUM DE LA ABUELA — Olivia Ibacache
+  // Fotos y videos de la abuela, con su propia música.
+  // ══════════════════════════════════════════════════════════════
+  {
+    id: "Dia_De_La_Madre",
+    title: "Feliz día de la Madre, Olivia Ibacache",
+    description: "Momentos inolvidables de la maravillosa madre y abuela",
+    cover: "/albums/vacaciones/abuela/foto1.jpeg",
+    date: "Mayo 2026",
+
+    musicSections: [
+      // Sección 0 — Canciones para la abuela
+      [
+        "/albums/vacaciones/abuela/Me queda mi madre - Jay Murrieta.mp3",
+        // Agrega más canciones de la abuela aquí:
+        // "/albums/vacaciones/abuela/musica2.mp3",
+      ],
+    ],
+
+    photos: [
+      // ════════════════════════════════════════════════════════
+      // FOTOS DE LA ABUELA
+      // musicSection: 0 → usa musicSections[0]
+      // Para agregar más fotos, agrega la ruta al array de abajo.
+      // Para agregar captions, usa el índice (0 = primera foto).
+      // ════════════════════════════════════════════════════════
+      ...makePhotos(
+        [
+          "/albums/vacaciones/abuela/foto1.jpeg",
+          "/albums/vacaciones/abuela/foto2.jpeg",
+          "/albums/vacaciones/abuela/foto3.jpeg",
+          "/albums/vacaciones/abuela/foto5.jpeg",
+          "/albums/vacaciones/abuela/foto6.jpeg",
+          "/albums/vacaciones/abuela/foto7.jpeg",
+          "/albums/vacaciones/abuela/foto8.jpeg",
+          "/albums/vacaciones/abuela/foto9.jpeg",
+          "/albums/vacaciones/abuela/foto10.jpeg",
+          "/albums/vacaciones/abuela/foto11.jpeg",
+          "/albums/vacaciones/abuela/foto12.jpeg",
+          "/albums/vacaciones/abuela/foto13.jpeg",
+          "/albums/vacaciones/abuela/foto15.jpeg",
+          "/albums/vacaciones/abuela/foto16.jpeg",
+          "/albums/vacaciones/abuela/foto17.jpeg",
+          "/albums/vacaciones/abuela/foto18.jpeg",
+          "/albums/vacaciones/abuela/foto19.jpeg",
+          "/albums/vacaciones/abuela/foto20.jpeg",
+          "/albums/vacaciones/abuela/foto21.jpeg",
+          "/albums/vacaciones/abuela/foto22.jpeg",
+          "/albums/vacaciones/abuela/foto23.jpeg",
+          "/albums/vacaciones/abuela/foto24.jpeg",
+          "/albums/vacaciones/abuela/foto25.jpeg",
+          "/albums/vacaciones/abuela/foto26.jpeg",
+          "/albums/vacaciones/abuela/foto27.jpeg",
+          "/albums/vacaciones/abuela/foto28.jpeg",
+          "/albums/vacaciones/abuela/foto29.jpeg",
+          "/albums/vacaciones/abuela/foto30.jpeg",
+          "/albums/vacaciones/abuela/foto31.jpeg",
+          "/albums/vacaciones/abuela/foto32.jpeg",
+          "/albums/vacaciones/abuela/foto33.jpeg",
+          "/albums/vacaciones/abuela/foto34.jpeg",
+          "/albums/vacaciones/abuela/foto35.jpeg",
+          "/albums/vacaciones/abuela/foto36.jpeg",
+          "/albums/vacaciones/abuela/foto37.jpeg",
+          "/albums/vacaciones/abuela/foto38.jpeg",
+          "/albums/vacaciones/abuela/foto39.jpeg",
+          "/albums/vacaciones/abuela/foto40.jpeg",
+          "/albums/vacaciones/abuela/foto41.jpeg",
+          "/albums/vacaciones/abuela/foto42.jpeg",
+          "/albums/vacaciones/abuela/foto43.jpeg",
+          "/albums/vacaciones/abuela/foto44.jpeg",
+          "/albums/vacaciones/abuela/foto45.jpeg",
+          "/albums/vacaciones/abuela/foto46.jpeg",
+          "/albums/vacaciones/abuela/foto47.jpeg",
+          "/albums/vacaciones/abuela/foto48.jpeg",
+          "/albums/vacaciones/abuela/foto49.jpeg",
+          "/albums/vacaciones/abuela/foto50.jpeg",
+          "/albums/vacaciones/abuela/foto51.jpeg",
+          "/albums/vacaciones/abuela/foto52.jpeg",
+          "/albums/vacaciones/abuela/foto53.jpeg",
+          "/albums/vacaciones/abuela/foto54.jpeg",
+          "/albums/vacaciones/abuela/foto55.jpeg",
+          "/albums/vacaciones/abuela/foto56.jpeg",
+          "/albums/vacaciones/abuela/foto57.jpeg",
+          "/albums/vacaciones/abuela/foto58.jpeg",
+          "/albums/vacaciones/abuela/foto59.jpeg",
+          "/albums/vacaciones/abuela/foto60.jpeg",
+          "/albums/vacaciones/abuela/foto61.jpeg",
+          "/albums/vacaciones/abuela/foto62.jpeg",
+          "/albums/vacaciones/abuela/foto63.jpeg",
+          "/albums/vacaciones/abuela/foto64.jpeg",
+        ],
+        {
+          // ── Captions de la abuela ─────────────────────────────
+          // Índice 0 = primera foto de este bloque.
+          // Para agregar más, copia el formato: 5: "Tu mensaje aquí",
+          0: "Te doy las gracias por todo, me siento orgulloso de ti mamá. Me siento feliz por tenerte y tener una madre hermosa, luchadora, comprensiva y cariñosa. Gracias por tus consejos tan sabios, han sido importantes para mí en mi vida. Agradecido de ti. Tú sabes cuánto te amo mamita. Gracias por compartir lindos momentos conmigo, doy gracias a Dios por tenerte a mi lado. Gracias, gracias.",
+        },
+        0,  // musicSection 0 = canciones de la abuela (único sección en este álbum)
+        0   // startAt: empieza desde Foto 1
+      ),
+
+      // ── Videos de la abuela ───────────────────────────────────
+      // Agrega aquí los archivos .mp4 o .webm de la abuela.
+      ...makeVideos(
+        [
+          "/albums/vacaciones/abuela1.mp4",
+          // Agrega más videos de la abuela aquí:
+          // "/albums/vacaciones/abuela/video2.mp4",
+        ],
+        {
+          // 0: "Descripción del primer video",
+        },
+        0,  // musicSection 0 = canciones de la abuela
+        64  // startAt: continúa desde después de las 64 fotos de la abuela
+      ),
+    ],
+  },
         0,   // musicSection 0 = canciones del abuelo
         198  // startAt: ajusta según cuántas fotos hay antes
       ),
@@ -483,6 +599,65 @@ export const albums: Album[] = [
         199  // startAt: continúa desde después de las fotos + videos del abuelo
       ),
     ],
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  // ÁLBUM DE VIDEOS — Feliz Aniversario Olivia Ibacache y Héctor Cortés
+  // Solo contiene videos mp4. No tiene música establecida.
+  // ══════════════════════════════════════════════════════════════
+  {
+    id: "aniversario_olivia_hector",
+    title: "Feliz Aniversario Olivia Ibacache y Héctor Cortés",
+    description: "Videos especiales para celebrar su aniversario",
+    cover: "/albums/aniversario/cover.png",
+    date: "2026",
+    // Sin música establecida — álbum de solo videos
+    musicSections: [],
+    photos: makeVideos(
+      [
+        // ── Agrega aquí los videos del aniversario ──────────────
+        // Copia el nombre exacto del archivo (con espacios si los tiene)
+        // y ponlo en la carpeta /public/albums/aniversario/
+        // Ejemplo:
+        // "/albums/aniversario/video1.mp4",
+        // "/albums/aniversario/video2.mp4",
+      ],
+      {
+        // Captions opcionales por índice:
+        // 0: "Descripción del primer video",
+      },
+      0, // musicSection (sin efecto al no haber música)
+      0
+    ),
+  },
+
+  // ══════════════════════════════════════════════════════════════
+  // ÁLBUM DE VIDEOS — Para Olivia Ibacache
+  // Solo contiene videos mp4. No tiene música establecida.
+  // ══════════════════════════════════════════════════════════════
+  {
+    id: "olivia_ibacache",
+    title: "Para Olivia Ibacache",
+    description: "Videos especiales para Olivia Ibacache",
+    cover: "/albums/olivia/cover.png",
+    date: "2026",
+    // Sin música establecida — álbum de solo videos
+    musicSections: [],
+    photos: makeVideos(
+      [
+        // ── Agrega aquí los videos de Olivia ───────────────────
+        // Copia el nombre exacto del archivo y ponlo en /public/albums/olivia/
+        // Ejemplo:
+        // "/albums/olivia/video1.mp4",
+        // "/albums/olivia/video2.mp4",
+      ],
+      {
+        // Captions opcionales por índice:
+        // 0: "Descripción del primer video",
+      },
+      0, // musicSection (sin efecto al no haber música)
+      0
+    ),
   },
 
   // ── Para agregar un nuevo álbum, copia este bloque ────────────
