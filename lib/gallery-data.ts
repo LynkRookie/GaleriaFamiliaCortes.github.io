@@ -664,7 +664,7 @@ export const albums: Album[] = [
   // {
   //   id: "cumpleanos",
   //   title: "Cumpleaños 2025",
-  //   description: "La celebración del año",
+  //   description: "La celebración del año"
   //   cover: "/albums/cumpleanos/foto1.jpg",
   //   date: "Diciembre 2025",
   //   photos: makePhotos([
