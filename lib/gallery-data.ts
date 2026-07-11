@@ -491,7 +491,7 @@ export const albums: Album[] = [
       // Agrega aquí los archivos .mp4 o .webm de la abuela.
       ...makeVideos(
         [
-          "/albums/vacaciones/abuela1.mp4",
+         
           // Agrega más videos de la abuela aquí:
           // "/albums/vacaciones/abuela/video2.mp4",
         ],
@@ -519,6 +519,7 @@ export const albums: Album[] = [
     musicSections: [],
     photos: makeVideos(
       [
+         "/albums/vacaciones/abuela1.mp4",
         // ── Agrega aquí los videos del aniversario ──────────────
         // Copia el nombre exacto del archivo (con espacios si los tiene)
         // y ponlo en la carpeta /public/albums/aniversario/
